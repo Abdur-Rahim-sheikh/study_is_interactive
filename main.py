@@ -1,6 +1,13 @@
+import streamlit as st
+from domain import Base
+import os
 def main():
-    print("Hello from study-is-interactive!")
-
-
+    st.header("Hello, there!")
+    classes = os.listdir("data")
+    pg = st.navigation(
+        [
+            st.Page()
+        ]
+    )
 if __name__ == "__main__":
     main()
