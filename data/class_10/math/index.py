@@ -1,5 +1,5 @@
 from domain import Base
-from streamlit import st
+import streamlit as st
 
 class Index(Base):
     def __init__(self):
@@ -7,3 +7,7 @@ class Index(Base):
 
     def activate(self):
         st.write("১০ম শ্রেণির গণিত")
+
+
+index = Index()
+index.activate()
