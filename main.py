@@ -29,7 +29,11 @@ def backToHome():
 # apply caching later
 def getTopics(chapter_path: Path):
     topics = []
+    
     for topic in os.listdir(chapter_path):
+        if not topic.endswith(".py") or topic.startswith("__"):
+            continue
+        
         topics.append(st.Page(os.path.join(chapter_path, topic), title=topic.rstrip(".py")))
     return topics
 
