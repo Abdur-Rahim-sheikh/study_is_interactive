@@ -1,20 +1,23 @@
-from graphviz import Source, Digraph, Graph
-from ..models import Path
+from graphviz import Digraph, Graph
 import streamlit as st
 import time
 
 class GraphVisualize:
-    def __init__(self, graph: str, graph_type:str="digraph", layout: str ="dot", node_shape: str = "box"):
-        self.graph = Digraph()
+    def __init__(self, graph: dict[list], graph_type:str="digraph", layout: str ="dot", node_shape: str = "box"):
+        self.graph = Digraph(engine=layout)
         if graph_type == "graph":
-            self.graph = Graph()
+            self.graph = Graph(engine=layout)
+
         
-        self.graph.body+= graph.splitlines()
-        
-        # self.graph.attr(layout=layout)
+        for src, dest in graph.items():
+            self.graph.node(src, shape=node_shape)
+            for d in dest:
+                self.graph.node(d, shape=node_shape)
+                self.graph.edge(src, d)
+       
         self.node_shape = node_shape
 
-    def drawGraph(self, active_node, visited_nodes, edges: list):
+    def drawGraph(self, active_node, visited_nodes):
         graph = self.graph.copy()
         
         for node in visited_nodes:
@@ -22,21 +25,22 @@ class GraphVisualize:
         
         graph.node(active_node, shape=self.node_shape, style="filled", fillcolor="yellow")
 
-        for edge in edges:
-            graph.edge(edge.x, edge.y, label=edge.label)
-
         return graph
     
-    def animate(self, path: Path, sleep_time: int = 1):
-        edges = path.edges()
+    def animate(self, path: list[tuple[str,str]], sleep_time: int = 1):
+        if len(path) == 0:
+            st.warning("No nodes to visualize.")
+            return
+        
         visited = []
         placeholder = st.empty()
-
-        for idx, step in enumerate(path.nodes):
-            edges = path.edges(till=idx)
-            graph = self.drawGraph(active_node=step, visited_nodes=visited, edges=edges)
+        for node, info in path:
+            graph = self.drawGraph(active_node=node, visited_nodes=visited)
             placeholder.graphviz_chart(graph)
-            visited.append(step)
+            visited.append(node)
+            if info:
+                # info can also come in full blown md format
+                st.toast(body=info, icon=":material/lightbulb:")
             time.sleep(sleep_time)
 
         st.success("Traversal complete!")
