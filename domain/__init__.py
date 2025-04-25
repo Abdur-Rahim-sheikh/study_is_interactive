@@ -1,1 +1,1 @@
-from .base import Base
+from .base_page import BasePage

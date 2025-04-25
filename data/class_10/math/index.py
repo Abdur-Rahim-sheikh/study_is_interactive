@@ -1,7 +1,7 @@
-from domain import Base
+from domain import BasePage
 import streamlit as st
 
-class Index(Base):
+class Index(BasePage):
     def __init__(self):
         super().__init__("Index")
 
