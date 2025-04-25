@@ -1,6 +1,5 @@
 import streamlit as st
 from pathlib import Path
-from domain import BasePage
 import os
 
 if "grade" not in st.session_state:
@@ -9,7 +8,13 @@ if "grade" not in st.session_state:
 GRADE_SRC = "data"
 grades = [None] + [grade for grade in os.listdir(GRADE_SRC) ]
 
+
+
 def homeView():
+    st.set_page_config(
+        page_title = "হোম পেজ",
+        layout="centered"
+    )
     st.header(f"হোম পেজ!")
     grade = st.selectbox("কোন ক্লাস দেখতে চান?", grades, key="selected_grade")
 
@@ -43,7 +48,7 @@ if grade:
     books = getBooks(path)
     # settings = 
     pg = st.navigation(
-         books | {"হোম": [st.Page(backToHome, title="হোম")]},
+         books | {"আরো": [st.Page(backToHome, title="হোমে ফিরে যাই")]},
     )
 else:
     pg = st.navigation([st.Page(homeView)])
