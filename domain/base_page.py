@@ -26,3 +26,7 @@ class BasePage(ABC):
         st.subheader(self.topic)
         # this might be later removed
         st.sidebar.header(self.header)
+
+    @abstractmethod
+    def build_page(self, **args):
+        raise NotImplementedError("build_page method must be implemented in the derived class")

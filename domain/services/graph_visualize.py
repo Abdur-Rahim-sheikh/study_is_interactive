@@ -8,7 +8,6 @@ class GraphVisualize:
         if graph_type == "graph":
             self.graph = Graph(engine=layout)
 
-        
         for src, dest in graph.items():
             self.graph.node(src, shape=node_shape)
             for d in dest:
