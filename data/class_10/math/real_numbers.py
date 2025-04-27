@@ -31,10 +31,9 @@ selected = st.pills(
 )
 
 
-if selected:
+if selected and st.button("চেক করুন"):
     st.write(f"আপনি `{selected}` ক্যাটেগরি নির্বাচন করেছেন।")
     paths = categorizer.categorize(number)
-    st.write(paths)
     answers = set(path[-1] for path in paths)
     if selected in answers:
         st.write(f"আপনার সংখ্যা `{selected}` ক্যাটেগরির অন্তর্ভুক্ত।")
