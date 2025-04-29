@@ -102,7 +102,9 @@ class RealNumbers:
 
     def is_infinite_decimal(self, value: float):
         number = nsimplify(value)
-
+        if not number.is_rational:
+            return True
+            
         num, denum = number.as_numer_denom()
 
         rem = num % denum
