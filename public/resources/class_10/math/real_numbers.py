@@ -1,6 +1,5 @@
 from sympy import isprime, nsimplify
 
-
 class RealNumbers:
     @property
     def getCategories(self):
@@ -40,6 +39,14 @@ class RealNumbers:
             "সসীম",
             "অসীম আবৃত্ত",
             "অসীম অনাবৃত দশমিক",
+        ]
+    
+    @property
+    def getNumberFormat(self):
+        return [
+            "দশমিক",
+            "ভগ্নাংশ",
+            "মিশ্র"
         ]
 
     @property
@@ -109,7 +116,13 @@ class RealNumbers:
             rems.add(rem)
         return False
 
-    def categorize(self, value: float, apostrophe=False):
+    def categorize(self, value: float, apostrophe=False, number_format=None):
+        f"""
+        যদি number_format দেয়া হয় {self.getNumberFormat}  তাহলে বেস্ট ম্যাচ পাথ রিটার্ন করা হবে
+        """
+        if number_format and number_format not in self.getNumberFormat:
+            raise ValueError(f"Invalid number format: {number_format}. Choose from {self.getNumberFormat}.")
+        
         try:
             number = nsimplify(value)
         except (ValueError, TypeError):
@@ -156,5 +169,14 @@ class RealNumbers:
 
             path = self.dfs(self.getGraph, ROOT, "সসীম")
             paths.append(path)
+
+        if number_format:
+            if number_format == "দশমিক":
+                paths = [path for path in paths if path[-2] == "দশমিক"]
+            elif number_format == "মিশ্র":
+                paths = [path for path in paths if path[-1] == "মিশ্র"]
+            elif number_format == "ভগ্নাংশ":
+                paths = [path for path in paths if path[-1] != "মিশ্র" and path[-2]!= "দশমিক"]
+                
 
         return paths
