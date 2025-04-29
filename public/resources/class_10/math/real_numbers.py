@@ -102,21 +102,19 @@ class RealNumbers:
 
     def is_infinite_decimal(self, value: float):
         number = nsimplify(value)
-        if not number.is_rational:
-            return False
 
         num, denum = number.as_numer_denom()
 
         rem = num % denum
         rems = set()
         cnt = 0
-        while rem != 0 and cnt < 100:
+        while rem != 0 and cnt < 1000:
             cnt += 1
             rem = (rem * 10) % denum
             if rem in rems:
                 return True
             rems.add(rem)
-        return False
+        return cnt<1000
 
     def categorize(self, value: float, apostrophe=False, number_format=None):
         f"""
