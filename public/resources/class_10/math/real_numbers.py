@@ -109,7 +109,9 @@ class RealNumbers:
 
         rem = num % denum
         rems = set()
-        while rem != 0:
+        cnt = 0
+        while rem != 0 and cnt < 100:
+            cnt += 1
             rem = (rem * 10) % denum
             if rem in rems:
                 return True
@@ -134,7 +136,7 @@ class RealNumbers:
             path = self.dfs(self.getGraph, ROOT, "অসীম অনাবৃত দশমিক")
             paths.append(path)
 
-        elif apostrophe or self.is_infinite_decimal(value):
+        elif apostrophe:
             path = self.dfs(self.getGraph, ROOT, "অসীম আবৃত্ত")
             paths.append(path)
 
@@ -157,6 +159,9 @@ class RealNumbers:
                 paths.append(path)
         else:
             # it's finite fractional now
+            if self.is_infinite_decimal(value):
+                path = self.dfs(self.getGraph, ROOT, "অসীম আবৃত্ত")
+                paths.append(path)
             num, denum = number.as_numer_denom()
             if num < denum:
                 path = self.dfs(self.getGraph, ROOT, "প্রকৃত")
@@ -170,13 +175,13 @@ class RealNumbers:
             path = self.dfs(self.getGraph, ROOT, "সসীম")
             paths.append(path)
 
-        if number_format:
-            if number_format == "দশমিক":
-                paths = [path for path in paths if path[-2] == "দশমিক"]
-            elif number_format == "মিশ্র":
-                paths = [path for path in paths if path[-1] == "মিশ্র"]
-            elif number_format == "ভগ্নাংশ":
-                paths = [path for path in paths if path[-1] != "মিশ্র" and path[-2]!= "দশমিক"]
+            if number_format:
+                if number_format == "দশমিক":
+                    paths = [path for path in paths if path[-2] == "দশমিক"]
+                elif number_format == "মিশ্র":
+                    paths = [path for path in paths if path[-1] == "মিশ্র"]
+                elif number_format == "ভগ্নাংশ":
+                    paths = [path for path in paths if path[-1] == "প্রকৃত" or path[-1]== "অপ্রকৃত"]
                 
 
         return paths
