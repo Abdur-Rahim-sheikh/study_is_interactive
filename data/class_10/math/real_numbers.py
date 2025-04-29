@@ -4,7 +4,7 @@ from domain import BasePage
 from domain.services import GraphVisualize
 from public.resources.class_10.math.real_numbers import RealNumbers as numberCategorize
 from domain.utils.to_bangla_digit import toBanglaDigit
-
+from sympy import nsimplify
 class RealNumbers(BasePage):
     def __init__(self):
         super().__init__(file_location=__file__)
@@ -12,6 +12,15 @@ class RealNumbers(BasePage):
     def build_page(self, **args):
         pass
 
+    def adding_latex_power(self, number, power):
+        if power != 1:
+            num, denom = nsimplify(power).as_numer_denom()
+            if denom != 1:
+                number = fr"\sqrt[{denom}]{{{number}}}"
+            if num != 1:
+                number = fr"{number}^{num}"
+        return number
+    
     def take_input(self):
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -25,23 +34,37 @@ class RealNumbers(BasePage):
             whole_number = 0
             render = ""
             number = None
-            if chosen_option == "দশমিক": 
-                value = st.text_input(
-                    label =  "একটি বাস্তব সংখ্যা লিখুনঃ ",
-                    placeholder = "1.25'243'",
-                    value="0",  
-                    help = "- আপনি এপস্ট্রপি লিখতে চাইলে (') ব্যবহার করুন। - যেমনঃ 520.235'0238'",
-                )
+            if chosen_option == "দশমিক":
+                with st.container(height=100):
+                    col21, col22 = st.columns([1,2])
+                    with col21:
+                        power = st.number_input(
+                            label = "শক্তি",
+                            help = r"শক্তি নির্বাচন করুন, 0.5 = √, 0.33= ³√",
+                            min_value = 1/3,
+                            value = 1/1,
+                            step = 1/3
+                        )
+                    with col22: 
+                        value = st.text_input(
+                            label =  "একটি বাস্তব সংখ্যা লিখুনঃ ",
+                            placeholder = "1.25'243'",
+                            value="0",  
+                            help = "- আপনি এপস্ট্রপি লিখতে চাইলে (') ব্যবহার করুন। \n- যেমনঃ 520.235'0238'",
+                        )
                 
                 if "'" in value:
                     apostrophe = True
-                number = float(value.replace("'", ""))
+                number = float(value.replace("'", ""))**power
                 render = toBanglaDigit(value.replace("'", r"^\circ"))
+                render = self.adding_latex_power(render, power)
+                    
             else:
                 render = ""
                 with st.container(height=100):
                     col21, col22, col23 = st.columns(3)
                     with col21:
+                        power = 1
                         if chosen_option == "মিশ্র":
                             whole_number = st.number_input(
                                 label = "পূর্ণ সংখ্যা",
@@ -50,7 +73,14 @@ class RealNumbers(BasePage):
                                 format = "%d",
                             )
                             render = fr"{toBanglaDigit(whole_number)}\ "
-                    
+                        else:
+                            power = st.number_input(
+                                label = "শক্তি",
+                                help = "শক্তি নির্বাচন করুন",
+                                min_value = 1/3,
+                                value = 1/1,
+                                step = 1/3
+                            )
                     with col22:
                         numerator = st.number_input(
                             label = "লবঃ",
@@ -67,13 +97,13 @@ class RealNumbers(BasePage):
                             help = "একটি পূর্ণ সংখ্যা লিখুন",
                         )
 
-                number = (whole_number * denominator + numerator)/ denominator
+                number = ((whole_number * denominator + numerator)/ denominator) ** power
                 render += fr"\frac{{{toBanglaDigit(numerator)}}}{{{toBanglaDigit(denominator)}}}"
-            
+                render = self.adding_latex_power(render, power)
         with col3:
             st.latex(fr"\textcolor{{green}}{{আপনার\ সংখ্যাঃ \quad {render}}}")
 
-        return number, chosen_option, apostrophe, whole_number
+        return number, chosen_option, apostrophe, render
 
 
 
@@ -86,7 +116,7 @@ graph = categorizer.getGraph
 
 animator = GraphVisualize(graph=graph)
 
-number, number_format, apostrophe, whole_number = realNumbers.take_input()
+number, number_format, apostrophe, number_latex = realNumbers.take_input()
 
 selected = st.pills(
     label="এটা কোন ধরনের বাস্তব সংখ্যা?",
@@ -98,7 +128,7 @@ selected = st.pills(
 if selected and st.button("চেক করুন"):
     paths = categorizer.categorize(number, apostrophe=apostrophe, number_format=number_format)
     answers = set(path[-1] for path in paths)
-    st.write(number, paths)
+
     if selected in answers:
         st.write(f"হুররাহ! আপনার নির্বাচিত `{selected}` ক্যাটেগরিটি সঠিক!")
         st.balloons()
