@@ -133,7 +133,7 @@ if selected and st.button("চেক করুন"):
         st.write(f"হুররাহ! আপনার নির্বাচিত `{selected}` ক্যাটেগরিটি সঠিক!")
         st.balloons()
     else:
-        st.write(f"দুঃখিত! আপনার নির্বাচিত `{selected}` ক্যাটেগরিটি সঠিক নয়।")
+        st.write(f"দুঃখিত! আপনার নির্বাচিত `{selected}` ক্যাটেগরিটি সঠিক নয়। সঠিক ক্যাটেগরিটি হলো `{answers}`")
 
     
     for path in paths:
