@@ -1,5 +1,6 @@
 from sympy import isprime, nsimplify
 
+
 class RealNumbers:
     @property
     def getCategories(self):
@@ -22,7 +23,7 @@ class RealNumbers:
             "মিশ্র": "মিশ্র সংখ্যা",
             "সসীম": "সসীম সংখ্যা",
             "অসীম আবৃত্ত": "অসীম আবৃত্ত সংখ্যা",
-            "অসীম অনাবৃত দশমিক": "অসীম অনাবৃত দশমিক সংখ্যা",
+            "অসীম অনাবৃত্ত দশমিক": "অসীম অনাবৃত্ত দশমিক সংখ্যা",
         }
 
     @property
@@ -38,23 +39,19 @@ class RealNumbers:
             "মিশ্র",
             "সসীম",
             "অসীম আবৃত্ত",
-            "অসীম অনাবৃত দশমিক",
+            "অসীম অনাবৃত্ত দশমিক",
         ]
-    
+
     @property
     def getNumberFormat(self):
-        return [
-            "দশমিক",
-            "ভগ্নাংশ",
-            "মিশ্র"
-        ]
+        return ["দশমিক", "ভগ্নাংশ", "মিশ্র"]
 
     @property
     def getGraph(self):
         graph = {}
         graph["বাস্তব সংখ্যা"] = ["মূলদ", "অমূলদ"]
         graph["মূলদ"] = ["পূর্ণ", "ভগ্নাংশ"]
-        graph["অমূলদ"] = ["অসীম অনাবৃত দশমিক"]
+        graph["অমূলদ"] = ["অসীম অনাবৃত্ত দশমিক"]
         graph["পূর্ণ"] = ["ধনাত্মক", "০", "ঋণাত্মক"]
         graph["ভগ্নাংশ"] = ["সাধারণ", "দশমিক"]
         graph["ধনাত্মক"] = ["মৌলিক", "১", "যৌগিক"]
@@ -104,7 +101,7 @@ class RealNumbers:
         number = nsimplify(value)
         if not number.is_rational:
             return True
-            
+
         num, denum = number.as_numer_denom()
 
         rem = num % denum
@@ -116,15 +113,17 @@ class RealNumbers:
             if rem in rems:
                 return True
             rems.add(rem)
-        return cnt<1000
+        return cnt < 1000
 
     def categorize(self, value: float, apostrophe=False, number_format=None):
         f"""
         যদি number_format দেয়া হয় {self.getNumberFormat}  তাহলে বেস্ট ম্যাচ পাথ রিটার্ন করা হবে
         """
         if number_format and number_format not in self.getNumberFormat:
-            raise ValueError(f"Invalid number format: {number_format}. Choose from {self.getNumberFormat}.")
-        
+            raise ValueError(
+                f"Invalid number format: {number_format}. Choose from {self.getNumberFormat}."
+            )
+
         try:
             number = nsimplify(value)
         except (ValueError, TypeError):
@@ -133,7 +132,7 @@ class RealNumbers:
         ROOT = "বাস্তব সংখ্যা"
         paths = []
         if not number.is_rational:
-            path = self.dfs(self.getGraph, ROOT, "অসীম অনাবৃত দশমিক")
+            path = self.dfs(self.getGraph, ROOT, "অসীম অনাবৃত্ত দশমিক")
             paths.append(path)
 
         elif apostrophe:
@@ -181,7 +180,10 @@ class RealNumbers:
                 elif number_format == "মিশ্র":
                     paths = [path for path in paths if path[-1] == "মিশ্র"]
                 elif number_format == "ভগ্নাংশ":
-                    paths = [path for path in paths if path[-1] == "প্রকৃত" or path[-1]== "অপ্রকৃত"]
-                
+                    paths = [
+                        path
+                        for path in paths
+                        if path[-1] == "প্রকৃত" or path[-1] == "অপ্রকৃত"
+                    ]
 
         return paths
