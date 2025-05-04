@@ -1,16 +1,19 @@
 import math
+import time
+from itertools import accumulate
 
 import pandas as pd
 import streamlit as st
 
 from domain import BasePage
+from domain.services import Animate
 from domain.utils import to_roman
-from itertools import accumulate
 
 
 class StatisticsFrequencyDistribution(BasePage):
     def __init__(self):
         super().__init__(file_location=__file__)
+        self.animate = Animate()
 
     def parse_integer(self, value, sep=","):
         value = value.strip().strip(",")
@@ -42,13 +45,30 @@ class StatisticsFrequencyDistribution(BasePage):
             diff = st.number_input(label="শ্রেণি ব্যবধানঃ ", value=5, min_value=1)
 
         if len(dist) > 0 and st.button("See frequency distribution"):
-            df = self.build_df(dist, diff=diff)
-            st.dataframe(df, width=500)
+            df, info = self.build_df(dist, diff=diff)
+            self.show_info(info)
+            time.sleep(0.5)
+            self.animate.write(
+                f"শ্রেণি ব্যবধান {info['diff']} নিয়ে উপাত্তসমূহ বিন্যাস করলে গনসংখ্যা / ঘটনসংখ্যা নিবেশন সারণি নিম্নরূপঃ "
+            )
+            time.sleep(1)
+            st.dataframe(df, width=550)
 
-    def __get_range(self, mn, mx, diff):
-        # do this with yield
-        for i in range(mn, mx + 1, diff):
-            yield i, i + diff - 1
+    def show_info(self, info, interval=0.5):
+        self.animate.write(
+            f"উপাত্তের সবচেয়ে ছোট সংখ্যা {info['min']} এবং বড় সংখ্যা {info['max']}।"
+        )
+        time.sleep(interval)
+        dist_range = (info["max"] - info["min"]) + 1
+        self.animate.write(
+            f"সুতরাং উপাত্তের পরিসর = ({info['max']} - {info['min']}) + 1 = {dist_range}।"
+        )
+        time.sleep(interval)
+        sections = dist_range / info["diff"]
+        sections_upper = math.ceil(sections)
+        self.animate.write(
+            f"এখন শ্রেণি ব্যবধান যদি {info['diff']} হয়, তাহলে শ্রেণি সংখ্যা হবে {dist_range} / {info['diff']} = {sections} = {sections_upper}।"
+        )
 
     def build_df(self, dist: list, diff=5):
         dist.sort()
@@ -79,7 +99,17 @@ class StatisticsFrequencyDistribution(BasePage):
             }
         )
 
-        return df
+        info = {
+            "min": mn,
+            "max": mx,
+            "diff": diff,
+        }
+        return df, info
+
+    def __get_range(self, mn, mx, diff):
+        # do this with yield
+        for i in range(mn, mx + 1, diff):
+            yield i, i + diff - 1
 
 
 sfd = StatisticsFrequencyDistribution()

@@ -4,7 +4,7 @@ import streamlit as st
 
 
 class Animate:
-    def write(self, text: str, interval: float = 0.1):
+    def write(self, text: str, interval: float = 0.05):
         """
         Write text to the streamlit app with a typing effect.
         """
