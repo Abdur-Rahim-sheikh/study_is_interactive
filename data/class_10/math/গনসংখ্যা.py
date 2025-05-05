@@ -1,19 +1,36 @@
+import base64
 import math
 import time
+from io import BytesIO
 from itertools import accumulate
 
 import pandas as pd
 import streamlit as st
+from PIL import Image
 
 from domain import BasePage
 from domain.services import Animate
-from domain.utils import to_roman
 
 
 class StatisticsFrequencyDistribution(BasePage):
-    def __init__(self):
+    def __init__(self, tally_src="public/images"):
         super().__init__(file_location=__file__)
         self.animate = Animate()
+
+        self.tally_images = []
+
+        empty = Image.new("RGBA", (20, 40), (255, 255, 255, 0))
+        buffer = BytesIO()
+        empty.save(buffer, format="PNG")
+        base_64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+        self.tally_images.append(f"data:image/png;base64,{base_64}")
+
+        for i in range(1, 6):
+            img = Image.open(f"{tally_src}/tally_{i}.png").convert("RGBA")
+            buffer = BytesIO()
+            img.save(buffer, format="PNG")
+            base_64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+            self.tally_images.append(f"data:image/png;base64,{base_64}")
 
     def parse_integer(self, value, sep=","):
         value = value.strip().strip(",")
@@ -52,7 +69,15 @@ class StatisticsFrequencyDistribution(BasePage):
                 f"শ্রেণি ব্যবধান {info['diff']} নিয়ে উপাত্তসমূহ বিন্যাস করলে গনসংখ্যা / ঘটনসংখ্যা নিবেশন সারণি নিম্নরূপঃ "
             )
             time.sleep(1)
-            st.dataframe(df, width=550)
+            st.dataframe(
+                df,
+                width=550,
+                column_config={
+                    "ট্যালি চিহ্ন": st.column_config.ImageColumn(
+                        "ট্যালি চিহ্ন", help="গনসংখ্যা সমান মান ট্যালিতে দেখুন", width="medium"
+                    )
+                },
+            )
 
     def show_info(self, info, interval=0.5):
         self.animate.write(
@@ -74,6 +99,36 @@ class StatisticsFrequencyDistribution(BasePage):
         if row.name == 0:
             return str(row["ক্রমযোজিত গনসংখ্যা"])
         return f"{row['গনসংখ্যা']} + {df.at[row.name - 1, 'ক্রমযোজিত গনসংখ্যা']} = {row['ক্রমযোজিত গনসংখ্যা']}"
+
+    def __tally(self, num):
+        if num == 0:
+            return self.tally_images[0]  # empty image
+
+        parts = []
+        for i in range(num // 5):
+            parts.append(self.tally_images[5])  # tally_5.png
+
+        x = num % 5
+        if x > 0:
+            parts.append(self.tally_images[x])
+
+        images = [
+            Image.open(BytesIO(base64.b64decode(uri.split(",")[1]))) for uri in parts
+        ]
+
+        widths, heights = zip(*(img.size for img in images))
+        total_width = sum(widths)
+        max_height = max(heights)
+
+        new_img = Image.new("RGBA", (total_width, max_height), (255, 255, 255, 0))
+        x_offset = 0
+        for img in images:
+            new_img.paste(img, (x_offset, 0), img)
+            x_offset += img.width
+
+        buffer = BytesIO()
+        new_img.save(buffer, format="PNG")
+        return f"data:image/png;base64,{base64.b64encode(buffer.getvalue()).decode()}"
 
     def build_df(self, dist: list, diff=5, annote=True):
         dist.sort()
@@ -98,7 +153,7 @@ class StatisticsFrequencyDistribution(BasePage):
         df = pd.DataFrame(
             {
                 "সীমা": range_list,
-                "ট্যালি চিহ্ন": [to_roman(i) if i else "--" for i in arr],
+                "ট্যালি চিহ্ন": [self.__tally(num) for num in arr],
                 "গনসংখ্যা": arr,
                 "ক্রমযোজিত গনসংখ্যা": list(accumulate(arr)),
             }
