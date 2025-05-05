@@ -70,7 +70,12 @@ class StatisticsFrequencyDistribution(BasePage):
             f"এখন শ্রেণি ব্যবধান যদি {info['diff']} হয়, তাহলে শ্রেণি সংখ্যা হবে {dist_range} / {info['diff']} = {sections} = {sections_upper}।"
         )
 
-    def build_df(self, dist: list, diff=5):
+    def __cumsum_annotate(self, df, row):
+        if row.name == 0:
+            return str(row["ক্রমযোজিত গনসংখ্যা"])
+        return f"{row['গনসংখ্যা']} + {df.at[row.name - 1, 'ক্রমযোজিত গনসংখ্যা']} = {row['ক্রমযোজিত গনসংখ্যা']}"
+
+    def build_df(self, dist: list, diff=5, annote=True):
         dist.sort()
         mn, mx = dist[0], dist[-1]
         dist_range = (mx - mn) + 1
@@ -98,6 +103,11 @@ class StatisticsFrequencyDistribution(BasePage):
                 "ক্রমযোজিত গনসংখ্যা": list(accumulate(arr)),
             }
         )
+
+        if annote:
+            df["ক্ররমযোজিত গনসংখ্যা"] = df.apply(
+                lambda row: self.__cumsum_annotate(df, row), axis=1
+            )
 
         info = {
             "min": mn,
