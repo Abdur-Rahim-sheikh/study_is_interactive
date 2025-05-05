@@ -105,7 +105,7 @@ class StatisticsFrequencyDistribution(BasePage):
         )
 
         if annote:
-            df["ক্ররমযোজিত গনসংখ্যা"] = df.apply(
+            df["ক্রমযোজিত গনসংখ্যা"] = df.apply(
                 lambda row: self.__cumsum_annotate(df, row), axis=1
             )
 
