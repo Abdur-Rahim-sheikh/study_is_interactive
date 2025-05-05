@@ -2,9 +2,7 @@ import pandas as pd
 import streamlit as st
 
 from domain import BasePage
-
-if "frequencies" not in st.session_state:
-    st.session_state.frequencies = []
+from domain.utils import strToList
 
 
 class StatisticsGraph(BasePage):
@@ -15,7 +13,8 @@ class StatisticsGraph(BasePage):
         self.take_input()
 
     def take_input(self):
-        col1, col2, _ = st.columns([1, 1, 5])
+        col1, col2, col3 = st.columns([1, 1, 5])
+        starter = 0.0
         with col1:
             starter = st.number_input(
                 label="শ্রেণি শুরু",
@@ -23,22 +22,28 @@ class StatisticsGraph(BasePage):
                 value=0.0,
                 step=0.5,
             )
+
         with col2:
             diff = st.number_input(
                 label="শ্রেণি ব্যবধানঃ ",
                 value=5,
                 min_value=1,
             )
+        with col3:
+            freqs = st.text_area(
+                label="গনসংখ্যাঃ", help="গনসংখ্যা লিখুন যেমনঃ ৫, ১০, ২০, ১৫, ১০"
+            )
+            freqs = strToList(freqs)
 
         if st.button("কলাম যুক্ত করুন"):
             current = (
-                st.session_state.frequencies[-1]
+                st.session_state.frequencies[-1][-1]
                 if st.session_state.frequencies
                 else starter
             )
             st.session_state.frequencies.append([current, current + diff])
 
-        st.dataframe(st.session_state.frequencies)
+        st.write(st.session_state.frequencies)
 
 
 sg = StatisticsGraph()

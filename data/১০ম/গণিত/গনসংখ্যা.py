@@ -10,6 +10,7 @@ from PIL import Image
 
 from domain import BasePage
 from domain.services import Animate
+from domain.utils import strToList
 
 
 class StatisticsFrequencyDistribution(BasePage):
@@ -57,7 +58,7 @@ class StatisticsFrequencyDistribution(BasePage):
                 label="Enter the frequency distribution",
                 help="comma separated: 1,2,3,4,5",
             )
-            dist = self.parse_integer(dist)
+            dist = strToList(dist)
         with col2:
             diff = st.number_input(label="শ্রেণি ব্যবধানঃ ", value=5, min_value=1)
 
