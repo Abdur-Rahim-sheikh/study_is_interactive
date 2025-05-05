@@ -81,12 +81,12 @@ class StatisticsFrequencyDistribution(BasePage):
 
     def show_info(self, info, interval=0.5):
         self.animate.write(
-            f"উপাত্তের সবচেয়ে ছোট সংখ্যা {info['min']} এবং বড় সংখ্যা {info['max']}।"
+            f"উপাত্তের সবচেয়ে ছোট সংখ্যা {info['min']} এবং বড় সংখ্যা {info['max']}"
         )
         time.sleep(interval)
         dist_range = (info["max"] - info["min"]) + 1
         self.animate.write(
-            f"সুতরাং উপাত্তের পরিসর = ({info['max']} - {info['min']}) + 1 = {dist_range}।"
+            f"সুতরাং উপাত্তের পরিসর = ({info['max']} - {info['min']}) + 1 = {dist_range}"
         )
         time.sleep(interval)
         sections = dist_range / info["diff"]
