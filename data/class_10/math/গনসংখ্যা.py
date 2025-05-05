@@ -92,7 +92,12 @@ class StatisticsFrequencyDistribution(BasePage):
         sections = dist_range / info["diff"]
         sections_upper = math.ceil(sections)
         self.animate.write(
-            f"এখন শ্রেণি ব্যবধান যদি {info['diff']} হয়, তাহলে শ্রেণি সংখ্যা হবে {dist_range} / {info['diff']} = {sections} = {sections_upper}।"
+            f"এখন শ্রেণি ব্যবধান যদি {info['diff']} হয়,তাহলে শ্রেণি সংখ্যা হবে,"
+        )
+        time.sleep(interval)
+        self.animate.latex(
+            rf"\frac{{{dist_range}}}{{{info['diff']}}} = {sections:.2f}"
+            rf"\Rightarrow  \lceil {sections:.2f} \rceil = {sections_upper}"
         )
 
     def __cumsum_annotate(self, df, row):
