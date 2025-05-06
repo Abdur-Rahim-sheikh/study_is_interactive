@@ -1,16 +1,47 @@
+from itertools import accumulate
+
+import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
-
+from domain.services import Animate
 from domain import BasePage
 from domain.utils import strToList
 
 
 class StatisticsGraph(BasePage):
+    AVAILABLE_COLUMNS = ["শ্রেণি ব্যবধান", "মধ্যমান", "গনসংখ্যা", "ক্রমযোজিত গনসংখ্যা"]
+
     def __init__(self):
         super().__init__(file_location=__file__)
+        self.animate = Animate()
 
     def build_page(self, **args):
-        self.take_input()
+        freqs, starter, diff = self.take_input()
+        df = self.build_df(freqs, starter, diff, ["শ্রেণি ব্যবধান", "গনসংখ্যা"])
+        st.dataframe(df.T)
+        if st.button("সমাধান দেখুন"):
+            self.show_solution(freqs, starter, diff)
+
+    def build_df(self, freqs, starter, diff, columns):
+        if not all(col in self.AVAILABLE_COLUMNS for col in columns):
+            st.error(
+                "Invalid columns selected."
+                f"{[col for col in columns if col not in self.AVAILABLE_COLUMNS]}"
+            )
+            return None
+        df = pd.DataFrame()
+        if "শ্রেণি ব্যবধান" in columns:
+            df["শ্রেণি ব্যবধান"] = [
+                f"{starter + i * diff} - {starter + (i + 1) * diff}"
+                for i in range(len(freqs))
+            ]
+        if "মধ্যমান" in columns:
+            df["মধ্যমান"] = [starter + diff * (2 * i + 1) / 2 for i in range(len(freqs))]
+        if "গনসংখ্যা" in columns:
+            df["গনসংখ্যা"] = freqs.copy()
+        if "ক্রমযোজিত গনসংখ্যা" in columns:
+            df["ক্রমযোজিত গনসংখ্যা"] = list(accumulate(freqs))
+        return df
 
     def take_input(self):
         col1, col2, col3 = st.columns([1, 1, 5])
@@ -35,16 +66,23 @@ class StatisticsGraph(BasePage):
             )
             freqs = strToList(freqs)
 
-        df = pd.DataFrame(
-            {
-                "শ্রেণি": [
-                    f"{starter + i * diff} - {starter + (i + 1) * diff}"
-                    for i in range(len(freqs))
-                ],
-                "গনসংখ্যা": freqs,
-            }
+        return freqs, starter, diff
+
+    def show_solution(self, freqs, starter, diff):
+        self.animate.write("প্রাপ্ত উপাত্ত থেকে সারণি তৈরি করা হবেঃ")
+        df = self.build_df(freqs, starter, diff, self.AVAILABLE_COLUMNS)
+        st.dataframe(df, width=600)
+
+        fig, ax = plt.subplots()
+        ax.bar(
+            range(len(freqs)),
+            freqs,
+            width=1,
+            edgecolor="black",
+            align="edge",
+            alpha=0.7,
         )
-        st.dataframe(df.T)
+        st.pyplot(fig)
 
 
 sg = StatisticsGraph()
