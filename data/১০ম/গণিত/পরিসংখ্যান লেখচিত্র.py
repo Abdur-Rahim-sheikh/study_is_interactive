@@ -6,6 +6,7 @@ import streamlit as st
 from domain.services import Animate
 from domain import BasePage
 from domain.utils import strToList
+from matplotlib.axes import Axes
 
 
 class StatisticsGraph(BasePage):
@@ -68,21 +69,72 @@ class StatisticsGraph(BasePage):
 
         return freqs, starter, diff
 
+    def __attach_plt_attributes(self, ax: Axes, title, starter, diff, freqs):
+        ax.set_title(title)
+        ax.set_xticks(range(len(freqs) + 1))
+        ax.set_xticklabels(
+            [starter + i * diff for i in range(len(freqs) + 1)],
+            rotation=45,
+        )
+
     def show_solution(self, freqs, starter, diff):
         self.animate.write("প্রাপ্ত উপাত্ত থেকে সারণি তৈরি করা হবেঃ")
         df = self.build_df(freqs, starter, diff, self.AVAILABLE_COLUMNS)
         st.dataframe(df, width=600)
 
-        fig, ax = plt.subplots()
-        ax.bar(
-            range(len(freqs)),
-            freqs,
-            width=1,
-            edgecolor="black",
-            align="edge",
-            alpha=0.7,
-        )
-        st.pyplot(fig)
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            # aotolekh = graph
+            self.animate.write("ছক কাগজের ")
+            fig1, ax1 = plt.subplots()
+            self.__attach_plt_attributes(ax1, "Histogram", starter, diff, freqs)
+            ax1.bar(
+                range(len(freqs)),
+                freqs,
+                width=1,
+                edgecolor="black",
+                align="edge",
+                color="gray",
+                alpha=0.7,
+            )
+            st.pyplot(fig1)
+        with col2:
+            # gonosongkhya = frequency polygon
+            fig2, ax2 = plt.subplots()
+
+            self.__attach_plt_attributes(ax2, "Frequency Polygon", starter, diff, freqs)
+            ax2.plot(
+                [0] + [idx + 0.5 for idx in range(len(freqs))] + [len(freqs)],
+                [0] + freqs + [0],
+                marker="o",
+                linestyle="-",
+                color="blue",
+                alpha=0.7,
+            )
+            ax2.bar(
+                range(len(freqs)),
+                freqs,
+                width=1,
+                edgecolor="black",
+                align="edge",
+                color="gray",
+                alpha=0.7,
+            )
+            st.pyplot(fig2)
+
+        with col3:
+            # ojiv rekha = Ogive Graph
+            fig3, ax3 = plt.subplots()
+            self.__attach_plt_attributes(ax3, "Ogive Curve", starter, diff, freqs)
+            ax3.plot(
+                range(len(freqs)),
+                list(accumulate(freqs)),
+                marker="o",
+                linestyle="-",
+                color="green",
+                alpha=0.7,
+            )
+            st.pyplot(fig3)
 
 
 sg = StatisticsGraph()
