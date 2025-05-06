@@ -30,20 +30,21 @@ class StatisticsGraph(BasePage):
                 min_value=1,
             )
         with col3:
-            freqs = st.text_area(
+            freqs = st.text_input(
                 label="গনসংখ্যাঃ", help="গনসংখ্যা লিখুন যেমনঃ ৫, ১০, ২০, ১৫, ১০"
             )
             freqs = strToList(freqs)
 
-        if st.button("কলাম যুক্ত করুন"):
-            current = (
-                st.session_state.frequencies[-1][-1]
-                if st.session_state.frequencies
-                else starter
-            )
-            st.session_state.frequencies.append([current, current + diff])
-
-        st.write(st.session_state.frequencies)
+        df = pd.DataFrame(
+            {
+                "শ্রেণি": [
+                    f"{starter + i * diff} - {starter + (i + 1) * diff}"
+                    for i in range(len(freqs))
+                ],
+                "গনসংখ্যা": freqs,
+            }
+        )
+        st.dataframe(df.T)
 
 
 sg = StatisticsGraph()
