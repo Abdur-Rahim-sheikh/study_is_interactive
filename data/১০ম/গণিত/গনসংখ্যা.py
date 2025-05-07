@@ -15,7 +15,7 @@ from domain.utils import strToList
 
 class StatisticsFrequencyDistribution(BasePage):
     def __init__(self, tally_src="public/images"):
-        super().__init__(file_location=__file__)
+        super().__init__(file_location=str(__file__))
         self.animate = Animate()
 
         self.tally_images = []

@@ -1,5 +1,5 @@
 from .animate import Animate
 from .graph_visualize import GraphVisualize
-from .st_canvas_dict_converter import stCanvasDictConverter
+from .angle_approximator import AngleApproximator
 
-__all__ = ["GraphVisualize", "Animate", "stCanvasDictConverter"]
+__all__ = ["GraphVisualize", "Animate", "AngleApproximator"]

@@ -13,7 +13,7 @@ class StatisticsGraph(BasePage):
     AVAILABLE_COLUMNS = ["শ্রেণি ব্যবধান", "মধ্যমান", "গনসংখ্যা", "ক্রমযোজিত গনসংখ্যা"]
 
     def __init__(self):
-        super().__init__(file_location=__file__)
+        super().__init__(file_location=str(__file__))
         self.animate = Animate()
 
     def build_page(self, **args):
