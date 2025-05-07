@@ -1,4 +1,9 @@
-class stCanvasDictConverter:
+from pathlib import Path
+
+from PIL import Image
+
+
+class AngleApproximator:
     """
     A class to convert st_canvas which is from streamlit_drawable_canvas
     it changes dictionary to help feedback loop to initial drawing or others
@@ -6,11 +11,11 @@ class stCanvasDictConverter:
     polygon does not return any json, so it's no use here
     """
 
-    def __init__(self, canvas_version):
-        self.canvas_version = canvas_version
+    def __init__(self, background_path="public/images/geometry_background"):
+        self.background_path = Path(background_path)
         self.base_template = {
             "type": None,
-            "version": self.canvas_version,
+            "version": None,
             "originX": None,
             "originY": None,
             "left": None,
@@ -41,6 +46,7 @@ class stCanvasDictConverter:
             "skewX": None,
             "skewY": None,
         }
+        self.images = {}
 
     def __format_output(self, results: list):
         return {
@@ -48,24 +54,22 @@ class stCanvasDictConverter:
             "objects": results,
         }
 
-    def point_to_line(self, points: list) -> dict:
-        """
-        Convert point JSON to line JSON.
-        """
-        if len(points) < 2:
-            raise ValueError("At least two points are required to create a line.")
+    def __angle_preview(self, mode, graph_style=True):
+        key = mode + "_graph" if graph_style else mode
+        if key not in self.images:
+            self.images[key] = Image.open(self.background_path / f"{key}.png")
+        return self.images[key]
 
-        results = []
+    def get_angle_preview(self, graph_style=True) -> Image:
+        return self.__angle_preview("angle", graph_style=graph_style)
 
-        for idx in range(1, len(points)):
-            start = points[idx - 1]
-            end = points[idx]
+    def get_triangle_preview(self, graph_style=True) -> Image:
+        return self.__angle_preview("triangle", graph_style=graph_style)
 
-            line = self.get_template("line")
-            # line["x1"]
+    def get_quadrangle_preview(self, graph_style=True) -> Image:
+        return self.__angle_preview("quadrangle", graph_style=graph_style)
 
-        return self.__format_output(results)
-
+    @property
     def get_template(self, mode):
         if mode not in ["point", "line", "rect", "circle"]:
             raise ValueError(
