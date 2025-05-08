@@ -13,46 +13,7 @@ class AngleApproximator:
 
     def __init__(self, background_path="public/images/geometry_background"):
         self.background_path = Path(background_path)
-        self.base_template = {
-            "type": None,
-            "version": None,
-            "originX": None,
-            "originY": None,
-            "left": None,
-            "top": None,
-            "width": None,
-            "height": None,
-            "fill": None,
-            "stroke": None,
-            "strokeWidth": None,
-            "strokeDashArray": None,
-            "strokeLineCap": None,
-            "strokeDashOffset": None,
-            "strokeLineJoin": None,
-            "strokeUniform": None,
-            "strokeMiterLimit": None,
-            "scaleX": None,
-            "scaleY": None,
-            "angle": None,
-            "flipX": None,
-            "flipY": None,
-            "opacity": None,
-            "shadow": None,
-            "visible": None,
-            "backgroundColor": None,
-            "fillRule": None,
-            "paintFirst": None,
-            "globalCompositeOperation": None,
-            "skewX": None,
-            "skewY": None,
-        }
         self.images = {}
-
-    def __format_output(self, results: list):
-        return {
-            "version": self.canvas_version,
-            "objects": results,
-        }
 
     def __angle_preview(self, mode, graph_style=True):
         key = mode + "_graph" if graph_style else mode
@@ -68,6 +29,9 @@ class AngleApproximator:
 
     def get_quadrangle_preview(self, graph_style=True) -> Image:
         return self.__angle_preview("quadrangle", graph_style=graph_style)
+
+    def get_angle(self, points: list) -> list:
+        pass
 
     @property
     def get_template(self, mode):
