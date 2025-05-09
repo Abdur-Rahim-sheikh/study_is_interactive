@@ -36,7 +36,9 @@ class GeometryPage(BasePage):
         with col2:
             points = self.__extract_points(canvas_result.json_data)
 
-            approximation = self.angle_approximator.get_angle(points)
+            approximation = self.angle_approximator.get_angle_points(
+                points[0], points[1], points[2], points[3]
+            )
             if canvas_result.image_data is not None:
                 st.image(canvas_result.image_data, caption="কোন প্রাকদর্শন")
 

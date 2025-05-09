@@ -13,7 +13,7 @@ def test_get_angle_points_distance_too_far_raises():
     d = Point(1, 1)
     with pytest.raises(ValueError) as exc_info:
         approximator.get_angle_points(a, b, c, d)
-    assert "অধিক দুরে" in str(exc_info.value) or "দূরে" in str(exc_info.value)
+    assert "দূরে" in str(exc_info.value)
 
 
 def test_get_angle_points_returns_points():
