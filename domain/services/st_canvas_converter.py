@@ -47,7 +47,7 @@ class StCanvasConverter:
             "objects": results,
         }
 
-    def line_points(self, line: dict) -> tuple:
+    def get_points_of_line(self, line: dict) -> tuple:
         "It expects the same dict a line object has in st_canvas"
         center_x = line["left"]
         center_y = line["top"]

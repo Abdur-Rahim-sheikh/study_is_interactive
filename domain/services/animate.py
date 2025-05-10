@@ -41,7 +41,13 @@ class Animate:
         self.typwritter(text, div.latex, interval)
 
     def draw_angle(
-        self, a: Point, b: Point, c: Point, angle: float = 0, interval: float = 0.05
+        self,
+        a: Point,
+        b: Point,
+        c: Point,
+        stroke_width: int = 3,
+        angle: float = 0,
+        interval: float = 0.05,
     ):
         """
         Draw an angle between three points.
@@ -49,7 +55,25 @@ class Animate:
         div = st.empty()
         img = Image.new("RGB", (500, 500), (255, 255, 255))
         draw = ImageDraw.Draw(img)
-        draw.line((a.x, a.y, b.x, b.y), fill="black", width=2)
-        draw.line((b.x, b.y, c.x, c.y), fill="black", width=2)
-        draw.text((b.x + 10, b.y - 10), f"{angle:.2f}°", fill="black")
+        draw.line((a.x, a.y, b.x, b.y), fill="black", width=stroke_width)
+        draw.line((b.x, b.y, c.x, c.y), fill="black", width=stroke_width)
+        draw.text(
+            (b.x + 5, b.y - 5),
+            f"{int(angle)}°",
+            fill="black",
+            font=None,
+        )
+        draw.text(
+            (a.x + 5, a.y - 5),
+            "A",
+            fill="black",
+            font=None,
+        )
+
+        draw.text(
+            (c.x + 5, c.y - 5),
+            "C",
+            fill="black",
+            font=None,
+        )
         div.image(img)

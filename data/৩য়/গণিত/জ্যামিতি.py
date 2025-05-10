@@ -2,6 +2,9 @@ import streamlit as st
 from streamlit_drawable_canvas import st_canvas
 from domain.services import AngleApproximator
 from domain import BasePage
+from domain.models import Point
+from domain.services import Animate
+from domain.services import StCanvasConverter
 
 
 class GeometryPage(BasePage):
@@ -9,7 +12,8 @@ class GeometryPage(BasePage):
         super().__init__(file_location=str(__file__))
 
         self.angle_approximator = AngleApproximator()
-
+        self.animate = Animate()
+        self.canvas_converter = StCanvasConverter()
         self.stroke_width = st.sidebar.slider("Stroke width: ", 1, 25, 3)
 
         self.stroke_color = st.sidebar.color_picker("Stroke color hex: ")
@@ -34,17 +38,30 @@ class GeometryPage(BasePage):
 
             st.write(canvas_result.json_data)
         with col2:
-            points = self.__extract_points(canvas_result.json_data)
-
+            points = self.__extract_points_from_line(canvas_result.json_data)
+            if len(points) != 4:
+                st.stop()
+            st.write(points)
             approximation = self.angle_approximator.get_angle_points(
                 points[0], points[1], points[2], points[3]
             )
             if canvas_result.image_data is not None:
-                st.image(canvas_result.image_data, caption="কোন প্রাকদর্শন")
+                self.animate.draw_angle(
+                    approximation[0], approximation[1], approximation[2]
+                )
 
-    def __extract_points(self, json_data):
+    def __extract_points_from_line(self, json_data):
         if json_data is None or len(json_data["objects"]) > 2:
-            st.stop()
+            return []
+        points = []
+        for obj in json_data["objects"]:
+            if obj["type"] != "line":
+                continue
+
+            p1, p2 = self.canvas_converter.get_points_of_line(obj)
+            points.append(Point(*p1))
+            points.append(Point(*p2))
+        return points
 
 
 geometry = GeometryPage()
