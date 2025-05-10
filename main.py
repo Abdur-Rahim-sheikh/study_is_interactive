@@ -1,41 +1,43 @@
-import streamlit as st
-from pathlib import Path
 import os
+from pathlib import Path
+
+import streamlit as st
 
 if "grade" not in st.session_state:
     st.session_state["grade"] = None
 
 GRADE_SRC = "data"
-grades = [None] + [grade for grade in os.listdir(GRADE_SRC) ]
-
+grades = [None] + [grade for grade in os.listdir(GRADE_SRC)]
 
 
 def homeView():
-    st.set_page_config(
-        page_title = "হোম পেজ",
-        layout="centered"
-    )
-    st.header(f"হোম পেজ!")
+    st.set_page_config(page_title="হোম পেজ", layout="centered")
+    st.header("হোম পেজ!")
     grade = st.selectbox("কোন ক্লাস দেখতে চান?", grades, key="selected_grade")
 
     if st.button("ক্লাস দেখুন"):
         st.session_state.grade = grade
         st.rerun()
 
+
 def backToHome():
     st.session_state.grade = None
     st.rerun()
 
+
 # apply caching later
 def getTopics(chapter_path: Path):
     topics = []
-    
+
     for topic in os.listdir(chapter_path):
         if not topic.endswith(".py") or topic.startswith("__"):
             continue
-        
-        topics.append(st.Page(os.path.join(chapter_path, topic), title=topic.rstrip(".py")))
+
+        topics.append(
+            st.Page(os.path.join(chapter_path, topic), title=topic.rstrip(".py"))
+        )
     return topics
+
 
 # apply caching later
 def getBooks(grade_path: Path):
@@ -50,9 +52,9 @@ grade = st.session_state.grade
 if grade:
     path = os.path.join(GRADE_SRC, grade)
     books = getBooks(path)
-    # settings = 
+    # settings =
     pg = st.navigation(
-         books | {"আরো": [st.Page(backToHome, title="হোমে ফিরে যাই")]},
+        books | {"আরো": [st.Page(backToHome, title="হোমে ফিরে যাই")]},
     )
 else:
     pg = st.navigation([st.Page(homeView)])
