@@ -60,31 +60,31 @@ class AngleApproximator:
             block = 2 * math.pi / self.total_split
         else:
             block = 360 / self.total_split
-            angle = self.to_positive_degrees(angle)
+            angle = math.degrees(angle)
 
         nearest = round(angle / block) * block
         return nearest
 
     def get_nearest_A(self, point1: Point, point2: Point, point3: Point) -> tuple:
-        nearest = self.get_approximated_angle(point1, point2, point3)
+        nearest_angle = self.get_approximated_angle(point1, point2, point3)
 
-        new_point1 = self.__rotate_point(point1, point2, nearest, ccw=False)
+        new_point1 = self.__rotate_point(point1, point2, -nearest_angle)
 
         return new_point1
 
-    def __rotate_point(
-        self, p: Point, center: Point, angle_rad: float, ccw=True
-    ) -> Point:
+    def __rotate_point(self, p: Point, center: Point, angle_rad: float) -> Point:
         x = p.x - center.x
         y = p.y - center.y
-        if ccw:
-            angle_rad = -angle_rad
-        # Rotate
-        x_new = x * math.cos(angle_rad) - y * math.sin(angle_rad)
-        y_new = x * math.sin(angle_rad) + y * math.cos(angle_rad)
+
+        current_angle = math.atan2(y, x)
+        delta = angle_rad - current_angle
+        dx = x * math.cos(delta) - y * math.sin(delta)
+        dy = x * math.sin(delta) + y * math.cos(delta)
 
         # Translate back
-        return Point(x_new + center.x, y_new + center.y)
+        x_new = dx + center.x
+        y_new = dy + center.y
+        return Point(x_new, y_new)
 
     def normalize_bc_horizontally(self, a: Point, b: Point, c: Point) -> tuple:
         dx = c.x - b.x

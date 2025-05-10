@@ -1,4 +1,5 @@
 import logging
+import math
 
 import pytest
 
@@ -60,10 +61,50 @@ def test_get_angle_points_returns_points():
 def test_get_approximated_angle(a, b, c, expected_degree, quadrant_split):
     approximator = AngleApproximator(quadrant_split=quadrant_split)
 
-    angle = approximator.get_approximated_angle(a, b, c)
+    angle = approximator.get_approximated_angle(a, b, c, rad=False)
+    angle = (angle + 360) % 360
 
+    angle_rad = approximator.get_approximated_angle(a, b, c, rad=True)
+    total = 2 * math.pi
+    angle_rad = (angle_rad + total) % total
+    expected_rad = math.radians(expected_degree)
     logger.debug(f"Angle points: {a}, {b}, {c}")
     assert pytest.approx(expected_degree, rel=1e-6) == angle
+    assert pytest.approx(expected_rad, rel=1e-6) == angle_rad
+
+
+@pytest.mark.parametrize(
+    "point, center, angle, expected",
+    [
+        (Point(x=1, y=1), Point(x=0, y=0), math.pi / 2, Point(x=0, y=1.4142135623)),
+        # (Point(x=1, y=0), Point(x=0, y=0), math.pi, Point(x=-1, y=0)),
+        # (Point(x=1, y=0), Point(x=0, y=0), 3 * math.pi / 2, Point(x=0, y=1)),
+        # (Point(x=1, y=0), Point(x=0, y=0), 2 * math.pi, Point(x=1, y=0)),
+        # (
+        #     Point(x=291, y=113),
+        #     Point(x=293, y=244),
+        #     math.pi / 2,
+        #     Point(x=293, y=112.98478),
+        # ),
+        # (
+        #     Point(x=291, y=113),
+        #     Point(x=0, y=0),
+        #     math.pi / 2,
+        #     Point(x=0, y=312.1698255),
+        # ),
+        # (
+        #     Point(x=333.0, y=94.0),
+        #     Point(x=292.0, y=244.0),
+        #     math.pi / 2,
+        #     Point(x=292.0, y=93.98478),
+        # ),
+    ],
+)
+def test_rotate_point(point, center, angle, expected):
+    approximator = AngleApproximator()
+    # rotated_point = approximator.__rotate_point(point, center, angle)
+    rotated_point = approximator._AngleApproximator__rotate_point(point, center, angle)
+    assert expected == rotated_point
 
 
 @pytest.mark.parametrize(
@@ -82,8 +123,10 @@ def test_get_angle_points(a, b, c, expected_a, quadrant_split):
     approximator = AngleApproximator(quadrant_split=quadrant_split)
 
     a1, b1, c1 = approximator.get_angle_points(a, b, c)
+    angle = approximator.get_approximated_angle(a, b, c)
+    assert angle == (math.pi / 2)
 
     logger.debug(f"Angle points: {a}, {b}, {c}, {b.distance_from(a)}")
     assert b1 == b
     assert c1 == c
-    assert pytest.approx(expected_a, rel=1e-6) == a1
+    assert expected_a == a1
