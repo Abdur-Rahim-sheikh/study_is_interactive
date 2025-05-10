@@ -8,23 +8,19 @@ from domain.models import Point
 
 class AngleApproximator:
     """
-    A class to convert st_canvas which is from streamlit_drawable_canvas
-    it changes dictionary to help feedback loop to initial drawing or others
-    It supports conversion between point, line, rect and circle
-    polygon does not return any json, so it's no use here
+    approximates angles and their points
     """
 
     def __init__(
         self,
         background_path="public/images/geometry_background",
-        quadrant_split=4,
-        allowed_distance=2,
+        quadrant_split=1,
     ):
         if not (1 <= quadrant_split <= 4):
             raise ValueError("quadrant_split must be between 0 and 4, inclusive.")
 
         self.total_split = quadrant_split * 4
-        self.allowed_distance = allowed_distance
+
         self.background_path = Path(background_path)
         self.images = {}
 
@@ -43,42 +39,34 @@ class AngleApproximator:
     def get_quadrangle_preview(self, graph_style=True) -> Image:
         return self.__angle_preview("quadrangle", graph_style=graph_style)
 
-    def __calculate_angle(self, a: Point, b: Point, c: Point) -> float:
-        """
-        if returns angle in radians
-        """
-        BA = (a.x - b.x, a.y - b.y)
-        BC = (c.x - b.x, c.y - b.y)
-
-        dot_product = BA[0] * BC[0] + BA[1] * BC[1]
-        mag_BA = (BA[0] ** 2 + BA[1] ** 2) ** 0.5
-        mag_BC = (BC[0] ** 2 + BC[1] ** 2) ** 0.5
-        if mag_BA == 0 or mag_BC == 0:
-            raise ValueError("শূন্য দৈর্ঘ্য সঠিক নয়")
-
-        cos_theta = max(min(dot_product / (mag_BA * mag_BC), 1), -1)
-        angle = math.acos(cos_theta)  # in radians
-        return angle
+    def to_positive_degrees(self, radians: float) -> float:
+        return (math.degrees(radians) + 360) % 360
 
     def __signed_angle(self, a: Point, b: Point, c: Point) -> float:
         """
         The signed angle between the vectors BA and BC in radians.
+        It calculates CBA angle
         """
         vec_a = (a.x - b.x, a.y - b.y)
         vec_b = (c.x - b.x, c.y - b.y)
+
         cross_product = vec_a[0] * vec_b[1] - vec_a[1] * vec_b[0]
         dot_product = vec_a[0] * vec_b[0] + vec_a[1] * vec_b[1]
         angle = math.atan2(cross_product, dot_product)
         return angle
 
+    def get_approximated_angle(self, a: Point, b: Point, c: Point) -> float:
+        angle = self.__signed_angle(a, b, c)
+        angle_degrees = self.to_positive_degrees(angle)
+        block = 360 / self.total_split
+        nearest = round(angle_degrees / block) * block
+        return nearest
+
     def get_nearest_A(self, point1: Point, point2: Point, point3: Point) -> tuple:
-        angle = self.__signed_angle(point1, point2, point3)
         vec_a = (point1.x - point2.x, point1.y - point2.y)
         vec_b = (point3.x - point2.x, point3.y - point2.y)
 
-        angle_degrees = math.degrees(angle)
-        block = 360 / self.total_split
-        nearest = round(angle_degrees / block) * block
+        nearest = self.get_approximated_angle(point1, point2, point3)
 
         base_angle = math.atan2(vec_b[1], vec_b[0])
         final_angle = base_angle + math.radians(nearest)
@@ -119,19 +107,10 @@ class AngleApproximator:
         return a_rot, b_rot, c_rot
 
     def get_angle_points(
-        self, a: Point, b: Point, c: Point, d: Point, x_axis_parallel=False
+        self, a: Point, b: Point, c: Point, x_axis_parallel=False
     ) -> tuple:
-        f"""
-        Raises:
-            ValueError: if the distance between b and c is greater than {self.allowed_distance}
-        """
-        if b.distance_from(c) > self.allowed_distance:
-            bc = b.distance_from(c)
-            raise ValueError(
-                f"সংযোগ বিন্দু অনেক দূরে আছে: {bc:.2f} > {self.allowed_distance}"
-            )
-        middle = Point((b.x + c.x) / 2, (b.y + c.y) / 2)
-        a, b, c = a, middle, d
+        a, b, c = a.copy(), b.copy(), c.copy()
+
         a = self.get_nearest_A(a, b, c)
         if x_axis_parallel:
             a, b, c = self.normalize_bc_horizontally(a, b, c)
