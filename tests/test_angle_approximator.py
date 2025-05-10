@@ -2,6 +2,9 @@ import pytest
 
 from domain.models import Point
 from domain.services import AngleApproximator
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def test_get_angle_points_distance_too_far_raises():
@@ -50,3 +53,40 @@ def test_custom_allowed_distance():
     d = Point(1, 1)
     # Should not raise
     approximator.get_angle_points(a, b, c, d)
+
+
+def test_middle_point():
+    approximator = AngleApproximator()
+    a = Point(1, 2)
+    b = Point(0, 0)
+    c = Point(2, 0)
+    d = Point(2, 2)
+    _, middle, _ = approximator.get_angle_points(a, b, c, d)
+    assert isinstance(middle, Point)
+    assert middle.x == 1
+    assert middle.y == 0
+
+
+@pytest.mark.parametrize(
+    "a,b,c,d,expeted_a",
+    [
+        (
+            Point(100, 100),
+            Point(150, 150),
+            Point(150, 150),
+            Point(200, 150),
+            Point(200, 100),
+        ),
+        (Point(0, 0), Point(1, 1), Point(1, 1), Point(2, 0), Point(0, 0)),
+        (Point(-1, -1), Point(-2, -2), Point(-2, -2), Point(-3, -1), Point(-1, -1)),
+    ],
+)
+def test_get_angle_points(a, b, c, d, expeted_a):
+    approximator = AngleApproximator(quadrant_split=1)
+    middle = Point((b.x + c.x) / 2, (b.y + c.y) / 2)
+    a1, b1, c1 = approximator.get_angle_points(a, b, c, d)
+    print(a, b, c)
+    logger.debug(f"Angle points: {a}, {b}, {c}")
+    assert a1 == expeted_a
+    assert b1 == middle
+    assert c1 == d

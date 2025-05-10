@@ -43,49 +43,50 @@ class AngleApproximator:
     def get_quadrangle_preview(self, graph_style=True) -> Image:
         return self.__angle_preview("quadrangle", graph_style=graph_style)
 
-    def __calculate_angle(self, a: Point, b: Point, c: Point, rad=False) -> float:
+    def __calculate_angle(self, a: Point, b: Point, c: Point) -> float:
         """
-        if rad is True, return angle in radians
-        else return angle in degrees
+        if returns angle in radians
         """
         BA = (a.x - b.x, a.y - b.y)
         BC = (c.x - b.x, c.y - b.y)
 
         dot_product = BA[0] * BC[0] + BA[1] * BC[1]
-        magnitude_BA = (BA[0] ** 2 + BA[1] ** 2) ** 0.5
-        magnitude_BC = (BC[0] ** 2 + BC[1] ** 2) ** 0.5
-        angle = math.acos(dot_product / (magnitude_BA * magnitude_BC))
-        if not rad:
-            angle = math.degrees(angle)
+        mag_BA = (BA[0] ** 2 + BA[1] ** 2) ** 0.5
+        mag_BC = (BC[0] ** 2 + BC[1] ** 2) ** 0.5
+        if mag_BA == 0 or mag_BC == 0:
+            raise ValueError("শূন্য দৈর্ঘ্য সঠিক নয়")
+
+        cos_theta = max(min(dot_product / (mag_BA * mag_BC), 1), -1)
+        angle = math.acos(cos_theta)  # in radians
         return angle
 
-    def get_nearest_points(self, point1: Point, point2: Point, point3: Point) -> tuple:
-        angle = self.__calculate_angle(point1, point2, point3)
+    def __signed_angle(self, a: Point, b: Point, c: Point) -> float:
+        """
+        The signed angle between the vectors BA and BC in radians.
+        """
+        vec_a = (a.x - b.x, a.y - b.y)
+        vec_b = (c.x - b.x, c.y - b.y)
+        cross_product = vec_a[0] * vec_b[1] - vec_a[1] * vec_b[0]
+        dot_product = vec_a[0] * vec_b[0] + vec_a[1] * vec_b[1]
+        angle = math.atan2(cross_product, dot_product)
+        return angle
+
+    def get_nearest_A(self, point1: Point, point2: Point, point3: Point) -> tuple:
+        angle = self.__signed_angle(point1, point2, point3)
+        vec_a = (point1.x - point2.x, point1.y - point2.y)
+        vec_b = (point3.x - point2.x, point3.y - point2.y)
+
+        angle_degrees = math.degrees(angle)
         block = 360 / self.total_split
-        nearest = round(angle / block) * block
+        nearest = round(angle_degrees / block) * block
 
-        theta = math.radians(nearest)
-        dx1 = point1.x - point2.x
-        dx2 = point3.x - point2.x
-        dy2 = point3.y - point2.y
-        norm_BC = (dx2**2 + dy2**2) ** 0.5
-        cos_theta = math.cos(theta)
-        A = dy2
-        B = dx1 * dx2
-        C = norm_BC * cos_theta
-
-        a = A**2 - C**2
-        b = 2 * A * B
-        c = B**2 - dx1**2 * C**2
-        discriminant = b**2 - 4 * a * c
-        if discriminant < 0:
-            raise ValueError("No real roots found")
-        sqrt_discriminant = discriminant**0.5
-        dy11 = (-b + sqrt_discriminant) / (2 * a)
-        dy12 = (-b - sqrt_discriminant) / (2 * a)
-
-        dy1 = min((dy11, dy12), key=lambda x: abs(x - point1.y))
-        point1.y = dy1
+        base_angle = math.atan2(vec_b[1], vec_b[0])
+        final_angle = base_angle + math.radians(nearest)
+        length = math.hypot(*vec_a)
+        new_dx = length * math.cos(final_angle)
+        new_dy = length * math.sin(final_angle)
+        point1.x = point2.x + new_dx
+        point1.y = point2.y + new_dy
 
         return point1
 
@@ -124,11 +125,14 @@ class AngleApproximator:
         Raises:
             ValueError: if the distance between b and c is greater than {self.allowed_distance}
         """
-        if b.distance_from(c) > 2:
-            raise ValueError("সংযোগ বিন্দু অনেক দূরে")
+        if b.distance_from(c) > self.allowed_distance:
+            bc = b.distance_from(c)
+            raise ValueError(
+                f"সংযোগ বিন্দু অনেক দূরে আছে: {bc:.2f} > {self.allowed_distance}"
+            )
         middle = Point((b.x + c.x) / 2, (b.y + c.y) / 2)
         a, b, c = a, middle, d
-        a = self.get_nearest_points(a, b, c)
+        a = self.get_nearest_A(a, b, c)
         if x_axis_parallel:
             a, b, c = self.normalize_bc_horizontally(a, b, c)
 
