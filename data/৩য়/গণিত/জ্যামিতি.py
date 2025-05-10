@@ -1,10 +1,11 @@
 import streamlit as st
 from streamlit_drawable_canvas import st_canvas
-from domain.services import AngleApproximator
+
 from domain import BasePage
 from domain.models import Point
-from domain.services import Animate
-from domain.services import StCanvasConverter
+from domain.services import AngleApproximator, Animate, StCanvasConverter
+
+allowed_distance = 5
 
 
 class GeometryPage(BasePage):
@@ -41,16 +42,21 @@ class GeometryPage(BasePage):
             points = self.__extract_points_from_line(canvas_result.json_data)
             if len(points) != 4:
                 st.stop()
-            st.write(points)
-            approximation = self.angle_approximator.get_angle_points(
-                points[0], points[1], points[2], points[3]
+            dist = points[1].distance_from(points[2])
+            if dist > allowed_distance:
+                st.error("দূরে")
+                st.stop()
+            middle_x = (points[1].x + points[2].x) / 2
+            middle_y = (points[1].y + points[2].y) / 2
+            middle = Point(middle_x, middle_y)
+            p1, p2, p3 = self.angle_approximator.get_angle_points(
+                points[0], middle, points[3]
             )
-            if canvas_result.image_data is not None:
-                self.animate.draw_angle(
-                    approximation[0], approximation[1], approximation[2]
-                )
+            st.write(f"{points[0]=} {middle=} {points[3]=}")
 
-    def __extract_points_from_line(self, json_data):
+            self.animate.draw_angle(p1, p2, p3)
+
+    def __extract_points_from_line(self, json_data) -> list[Point]:
         if json_data is None or len(json_data["objects"]) > 2:
             return []
         points = []

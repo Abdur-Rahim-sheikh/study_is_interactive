@@ -39,9 +39,6 @@ class AngleApproximator:
     def get_quadrangle_preview(self, graph_style=True) -> Image:
         return self.__angle_preview("quadrangle", graph_style=graph_style)
 
-    def to_positive_degrees(self, radians: float) -> float:
-        return (math.degrees(radians) + 360) % 360
-
     def __signed_angle(self, a: Point, b: Point, c: Point) -> float:
         """
         The signed angle between the vectors BA and BC in radians.
@@ -55,33 +52,33 @@ class AngleApproximator:
         angle = math.atan2(cross_product, dot_product)
         return angle
 
-    def get_approximated_angle(self, a: Point, b: Point, c: Point) -> float:
+    def get_approximated_angle(self, a: Point, b: Point, c: Point, rad=True) -> float:
+        """
+        The angle between the vectors BC to BA in degrees."""
         angle = self.__signed_angle(a, b, c)
-        angle_degrees = self.to_positive_degrees(angle)
-        block = 360 / self.total_split
-        nearest = round(angle_degrees / block) * block
+        if rad:
+            block = 2 * math.pi / self.total_split
+        else:
+            block = 360 / self.total_split
+            angle = self.to_positive_degrees(angle)
+
+        nearest = round(angle / block) * block
         return nearest
 
     def get_nearest_A(self, point1: Point, point2: Point, point3: Point) -> tuple:
-        vec_a = (point1.x - point2.x, point1.y - point2.y)
-        vec_b = (point3.x - point2.x, point3.y - point2.y)
-
         nearest = self.get_approximated_angle(point1, point2, point3)
 
-        base_angle = math.atan2(vec_b[1], vec_b[0])
-        final_angle = base_angle + math.radians(nearest)
-        length = math.hypot(*vec_a)
-        new_dx = length * math.cos(final_angle)
-        new_dy = length * math.sin(final_angle)
-        point1.x = point2.x + new_dx
-        point1.y = point2.y + new_dy
+        new_point1 = self.__rotate_point(point1, point2, nearest, ccw=False)
 
-        return point1
+        return new_point1
 
-    def __rotate_point(self, p: Point, center: Point, angle_rad: float) -> Point:
+    def __rotate_point(
+        self, p: Point, center: Point, angle_rad: float, ccw=True
+    ) -> Point:
         x = p.x - center.x
         y = p.y - center.y
-
+        if ccw:
+            angle_rad = -angle_rad
         # Rotate
         x_new = x * math.cos(angle_rad) - y * math.sin(angle_rad)
         y_new = x * math.sin(angle_rad) + y * math.cos(angle_rad)
