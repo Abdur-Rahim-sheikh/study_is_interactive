@@ -1,4 +1,4 @@
-from ..models import Line, Point
+from ..models import Point
 
 
 class VerticesManipulator:
