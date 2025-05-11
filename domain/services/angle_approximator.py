@@ -3,7 +3,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from domain.models import Point
+from ..models import Point
 
 
 class AngleApproximator:

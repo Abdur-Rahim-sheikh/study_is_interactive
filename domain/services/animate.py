@@ -4,7 +4,7 @@ import time
 import streamlit as st
 from PIL import Image, ImageDraw
 
-from domain.models import Point
+from ..models import Point
 
 
 class Animate:
