@@ -52,10 +52,14 @@ class AngleApproximator:
         angle = math.atan2(cross_product, dot_product)
         return angle
 
-    def get_approximated_angle(self, a: Point, b: Point, c: Point, rad=True) -> float:
+    def get_approximated_angle(self, angle: float, rad=True) -> float:
         """
-        The angle between the vectors BC to BA in degrees."""
-        angle = self.__signed_angle(a, b, c)
+        Returns the angle in same unit as the input angle
+        it means if rad = True, it assumes the input angle is in radians
+        and also returns the angle in radians,
+        if rad = False, it assumes the input angle is in degrees
+        and also returns the angle in degrees
+        """
         if rad:
             block = 2 * math.pi / self.total_split
         else:
@@ -66,20 +70,19 @@ class AngleApproximator:
         return nearest
 
     def get_nearest_A(self, point1: Point, point2: Point, point3: Point) -> tuple:
-        nearest_angle = self.get_approximated_angle(point1, point2, point3)
-
-        new_point1 = self.__rotate_point(point1, point2, -nearest_angle)
+        angle = self.__signed_angle(point1, point2, point3)
+        nearest_angle = self.get_approximated_angle(angle)
+        delta_rad = -nearest_angle + angle
+        new_point1 = self.__rotate_point(point1, point2, delta_rad)
 
         return new_point1
 
-    def __rotate_point(self, p: Point, center: Point, angle_rad: float) -> Point:
+    def __rotate_point(self, p: Point, center: Point, delta_rad: float) -> Point:
         x = p.x - center.x
         y = p.y - center.y
 
-        current_angle = math.atan2(y, x)
-        delta = angle_rad - current_angle
-        dx = x * math.cos(delta) - y * math.sin(delta)
-        dy = x * math.sin(delta) + y * math.cos(delta)
+        dx = x * math.cos(delta_rad) - y * math.sin(delta_rad)
+        dy = x * math.sin(delta_rad) + y * math.cos(delta_rad)
 
         # Translate back
         x_new = dx + center.x
@@ -92,16 +95,15 @@ class AngleApproximator:
         angle = math.atan2(dy, dx)  # radians
 
         a_rot = self.__rotate_point(a, b, -angle)
-        b_rot = self.__rotate_point(b, b, -angle)
         c_rot = self.__rotate_point(c, b, -angle)
 
-        if c_rot.x < b_rot.x:
-            b_rot, c_rot = c_rot, b_rot
+        if c_rot.x < b.x:
+            b, c_rot = c_rot, b
 
-            a_dx = a_rot.x - b_rot.x
-            a_rot = Point(b_rot.x - a_dx, a_rot.y)
+            a_dx = a_rot.x - b.x
+            a_rot = Point(b.x - a_dx, a_rot.y)
 
-        return a_rot, b_rot, c_rot
+        return a_rot, b, c_rot
 
     def get_angle_points(
         self, a: Point, b: Point, c: Point, x_axis_parallel=False
