@@ -7,7 +7,12 @@ from streamlit_drawable_canvas import st_canvas
 
 from domain import BasePage
 from domain.models import Point
-from domain.services import AngleApproximator, Animate, StCanvasConverter
+from domain.services import (
+    AngleApproximator,
+    Animate,
+    StCanvasConverter,
+    VerticesManipulator,
+)
 
 allowed_distance = 10
 allowed_side_diff = 20
@@ -21,6 +26,7 @@ class GeometryPage(BasePage):
         self.width = 400
         self.animate = Animate(frame_height=self.height, frame_width=self.width)
         self.canvas_converter = StCanvasConverter()
+        self.vertices_merger = VerticesManipulator(allowed_distance=allowed_distance)
         self.stroke_width = st.sidebar.slider("কলমের প্রস্থ: ", 1, 25, 3)
         self.stroke_color = st.sidebar.color_picker("কলমের কালার: ")
         self.bg_color = st.sidebar.color_picker("বোর্ডের কালার: ", "#eee")
@@ -69,13 +75,14 @@ class GeometryPage(BasePage):
             title = st.empty()
             approximated_angle = None
             points = self.__extract_angle_from_lines(canvas_result.json_data)
+            startpoints = [points[i] for i in range(0, len(points), 2)]
+            endpoints = [points[i] for i in range(1, len(points), 2)]
             if len(points) > 6:
                 st.error("আপনি ৩ টির বেশি রেখা এঁকেছেন")
                 return
             elif len(points) != 6:
                 title.write("প্রতিচ্ছবি :sunglasses:")
-                startpoints = [points[i] for i in range(0, len(points), 2)]
-                endpoints = [points[i] for i in range(1, len(points), 2)]
+
                 self.animate.draw_lines(
                     startpoints,
                     endpoints,
@@ -84,7 +91,9 @@ class GeometryPage(BasePage):
                 )
                 return
 
-            status, points = self.__try_merge_vertices(points)
+            status, points = self.vertices_merger.merge_line_vertices(
+                startpoints, endpoints
+            )
             if not status:
                 st.error("সংযোগ বিন্দু আরো কাছাকাছি আনুন")
                 return
@@ -334,22 +343,6 @@ class GeometryPage(BasePage):
         msg = f"- {answer_msg} \n- {triangle_msg} এবং {angle_msg}"
 
         return status, msg
-
-    def __try_merge_vertices(self, points: list[Point], allowed_distance: int = 5):
-        if len(points) % 2 != 0:
-            raise ValueError(
-                "points should come in even as to make a line we need pair"
-            )
-
-        answers = []
-        for i in range(0, len(points), 2):
-            if points[i].distance_from(points[i - 1]) > allowed_distance:
-                return False, []
-
-            x1 = (points[i].x + points[i - 1].x) / 2
-            y1 = (points[i].y + points[i - 1].y) / 2
-            answers.append(Point(x1, y1))
-        return True, answers
 
     def __extract_angle_from_lines(self, json_data) -> list[Point]:
         if json_data is None:

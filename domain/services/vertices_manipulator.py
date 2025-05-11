@@ -3,18 +3,18 @@ from ..models import Line, Point
 
 class VerticesManipulator:
     def __init__(self, allowed_distance: int = 5):
-        self.allowed_distance = self.allowed_distance
+        self.allowed_distance = allowed_distance
 
     def allowed(self, a: Point, b: Point):
         return a.distance_from(b) <= self.allowed_distance
 
-    def merge_line_vertices(self, starts: list[Point], ends: list[Point]):
-        if len(starts) != len(ends):
+    def merge_line_vertices(self, start_points: list[Point], end_points: list[Point]):
+        if len(start_points) != len(end_points):
             raise ValueError(
-                f"starts and ends should equal to form correct line {len(starts)}!={len(ends)}"
+                f"starts and ends should equal to form correct line {len(start_points)}!={len(end_points)}"
             )
 
-        points = starts + ends
+        points = start_points + end_points
         visited = [False] * len(points)
         ans = []
         for i in range(len(points)):
@@ -22,12 +22,13 @@ class VerticesManipulator:
                 continue
 
             found_pair = False
-            for j in range(i + 1, range(len(points))):
+            for j in range(i + 1, len(points)):
                 if visited[j]:
                     continue
 
                 if self.allowed(points[i], points[j]):
                     found_pair = True
+                    visited[j] = True
                     break
             if not found_pair:
                 return False, []
