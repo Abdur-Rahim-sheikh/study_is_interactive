@@ -11,6 +11,12 @@ class Point:
         """Calculate the distance from this point to another point."""
         return ((self.x - other.x) ** 2 + (self.y - other.y) ** 2) ** 0.5
 
+    def angle_to(self, other: "Point") -> float:
+        """Calculate the signed angle from this point to another point."""
+        dx = self.x - other.x
+        dy = self.y - other.y
+        return math.atan2(dy, dx)
+
     def copy(self) -> "Point":
         """Create a copy of this point."""
         return Point(self.x, self.y)
