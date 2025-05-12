@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-
 import streamlit as st
 
 if "grade" not in st.session_state:
@@ -25,7 +24,6 @@ def backToHome():
     st.rerun()
 
 
-# apply caching later
 def getTopics(chapter_path: Path):
     topics = []
 
@@ -39,7 +37,6 @@ def getTopics(chapter_path: Path):
     return topics
 
 
-# apply caching later
 def getBooks(grade_path: Path):
     books = {}
     for chapter in os.listdir(grade_path):
@@ -53,9 +50,7 @@ if grade:
     path = os.path.join(GRADE_SRC, grade)
     books = getBooks(path)
     # settings =
-    pg = st.navigation(
-        books | {"আরো": [st.Page(backToHome, title="হোমে ফিরে যাই")]},
-    )
+    pg = st.navigation(books | {"আরো": [st.Page(backToHome, title="হোমে ফিরে যাই")]})
 else:
     pg = st.navigation([st.Page(homeView)])
 
