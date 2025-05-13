@@ -17,6 +17,9 @@ from domain.services import (
 allowed_distance = 10
 allowed_side_diff = 20
 
+if "geometry_choice" not in st.session_state:
+    st.session_state.geometry_choice = "কোন"
+
 
 class GeometryPage(BasePage):
     def __init__(self):
@@ -30,27 +33,131 @@ class GeometryPage(BasePage):
         self.stroke_width = st.sidebar.slider("কলমের প্রস্থ: ", 1, 25, 3)
         self.stroke_color = st.sidebar.color_picker("কলমের কালার: ")
         self.bg_color = st.sidebar.color_picker("বোর্ডের কালার: ", "#eee")
-        self.help_choice = st.sidebar.pills(
-            "কোনো সাহায্য নেবেন?",
-            ["না", "আধা", "পুরা"],
-            selection_mode="single",
-            default="আধা",
-            key="help_choice",
-        )
+        self.drawing_mode = "freedraw"
+        self.point_display_radius = 3
+        self.bg_image = None
+        if st.session_state.geometry_choice == "আঁকিবুঁকি":
+            self.drawing_mode = st.sidebar.selectbox(
+                "ড্রয়িং টুল:",
+                ("point", "freedraw", "line", "rect", "circle", "transform"),
+                index=1,
+            )
+
+            self.point_display_radius = 3
+            if self.drawing_mode == "point":
+                self.point_display_radius = st.sidebar.slider(
+                    "বিন্দুর ব্যস্যার্ধ: ", 1, 25, 3
+                )
+            self.bg_image = st.sidebar.file_uploader(
+                "ব্যাকগ্রাউন্ডের ছবি:", type=["png", "jpg"]
+            )
+            if self.bg_image:
+                self.bg_image = Image.open(self.bg_image)
+        else:
+            self.help_choice = st.sidebar.pills(
+                "কোনো সাহায্য নেবেন?",
+                ["না", "আধা", "পুরা"],
+                selection_mode="single",
+                default="আধা",
+                key="help_choice",
+            )
 
     def build_page(self, **args):
         # tabs = st.tabs(["কোন", "ত্রিভুজ", "চতুর্ভুজ", "পরীক্ষা", "আঁকিবুঁকি"])
-        tabs = st.tabs(["কোন", "ত্রিভুজ", "আঁকিবুঁকি"])
-        with tabs[0]:
-            st.session_state.pop("angle_canvas", None)
-            self.angle()
-        with tabs[1]:
-            st.session_state.pop("triangle_canvas", None)
 
+        chosen = st.selectbox(
+            "কোনটি আঁকবেন?",
+            ["কোন", "ত্রিভুজ", "আঁকিবুঁকি"],
+            key="geometry_choice",
+        )
+        if chosen == "কোন":
+            self.angle()
+        elif chosen == "ত্রিভুজ":
             self.triangle()
-        with tabs[2]:
-            st.session_state.pop("freedraw_canvas", None)
+        else:
             self.freedraw()
+
+    @st.fragment
+    def angle(self):
+        col1, col2, col3 = st.columns(3)
+        bg_image = None
+        if self.help_choice == "আধা":
+            bg_image = self.angle_approximator.get_angle_preview(graph_style=False)
+        elif self.help_choice == "পুরা":
+            bg_image = self.angle_approximator.get_angle_preview(graph_style=True)
+        with col1:
+            st.write("প্রথমে `AB` এরপর `BC` বাহু আকো")
+
+            canvas_result = st_canvas(
+                fill_color="rgba(255, 165, 0, 0.3)",
+                drawing_mode="line",
+                background_color=self.bg_color,
+                background_image=bg_image,
+                stroke_width=self.stroke_width,
+                stroke_color=self.stroke_color,
+                height=self.height,
+                width=self.width,
+                key="angle_canvas",
+            )
+
+        with col2:
+            title = st.empty()
+            approximated_angle = None
+            points = self.__extract_angle_from_lines(canvas_result.json_data)
+            if len(points) > 4:
+                st.error("আপনি ২টির বেশি রেখা এঁকেছেন")
+                return
+            elif len(points) != 4:
+                title.write("প্রতিচ্ছবি :sunglasses:")
+                startpoints = [points[i] for i in range(0, len(points), 2)]
+                endpoints = [points[i] for i in range(1, len(points), 2)]
+                self.animate.draw_lines(
+                    startpoints,
+                    endpoints,
+                    stroke_width=self.stroke_width,
+                    stroke_color=self.stroke_color,
+                )
+                return
+            dist = points[1].distance_from(points[2])
+            if dist > allowed_distance:
+                st.error("সংযোগ বিন্দু আরো কাছাকাছি আনুন")
+                return
+
+            middle_x = (points[1].x + points[2].x) / 2
+            middle_y = (points[1].y + points[2].y) / 2
+            middle = Point(middle_x, middle_y)
+            p1, p2, p3 = self.angle_approximator.get_angle_points(
+                points[0], middle, points[3]
+            )
+            approximated_angle = self.angle_approximator.get_approximated_angle(
+                p1, p2, p3, rad=False
+            )
+
+            title.write("আনুমানিক প্রদর্শন :brain:")
+            self.animate.draw_angle(
+                [
+                    p1,
+                    p2,
+                    p3,
+                ],
+                stroke_width=self.stroke_width,
+                stroke_color=self.stroke_color,
+            )
+        with col3:
+            if not approximated_angle:
+                st.write("এখনো কোন কোণ আকা হয়নি")
+                return
+            answer = st.pills(
+                "বলতে পারো কি কোন একেছো?", ["সূক্ষ্মকোণ", "সমকোন", "সরলকোণ", "স্থূলকোণ"]
+            )
+            if answer and st.button("উত্তর মিলাই"):
+                status, message = self.__match_angle_answer(approximated_angle, answer)
+                if status:
+                    st.balloons()
+                    self.animate.write(message)
+
+                else:
+                    self.animate.write(message)
 
     @st.fragment
     def triangle(self):
@@ -65,6 +172,7 @@ class GeometryPage(BasePage):
             st.write("প্রথমে `AB` এরপর `BC` শেষে `CA` বাহু আকো")
 
             canvas_result = st_canvas(
+                fill_color="rgba(255, 165, 0, 0.3)",
                 drawing_mode="line",
                 background_color=self.bg_color,
                 background_image=bg_image,
@@ -143,144 +251,54 @@ class GeometryPage(BasePage):
                     self.animate.write(message)
 
     @st.fragment
-    def angle(self):
-        col1, col2, col3 = st.columns(3)
-        bg_image = None
-        if self.help_choice == "আধা":
-            bg_image = self.angle_approximator.get_angle_preview(graph_style=False)
-        elif self.help_choice == "পুরা":
-            bg_image = self.angle_approximator.get_angle_preview(graph_style=True)
-        with col1:
-            st.write("প্রথমে `AB` এরপর `BC` বাহু আকো")
-
-            canvas_result = st_canvas(
-                drawing_mode="line",
-                background_color=self.bg_color,
-                background_image=bg_image,
-                stroke_width=self.stroke_width,
-                stroke_color=self.stroke_color,
-                height=self.height,
-                width=self.width,
-                key="angle_canvas",
-            )
-
-        with col2:
-            title = st.empty()
-            approximated_angle = None
-            points = self.__extract_angle_from_lines(canvas_result.json_data)
-            if len(points) > 4:
-                st.error("আপনি ২টির বেশি রেখা এঁকেছেন")
-                return
-            elif len(points) != 4:
-                title.write("প্রতিচ্ছবি :sunglasses:")
-                startpoints = [points[i] for i in range(0, len(points), 2)]
-                endpoints = [points[i] for i in range(1, len(points), 2)]
-                self.animate.draw_lines(
-                    startpoints,
-                    endpoints,
-                    stroke_width=self.stroke_width,
-                    stroke_color=self.stroke_color,
-                )
-                return
-            dist = points[1].distance_from(points[2])
-            if dist > allowed_distance:
-                st.error("সংযোগ বিন্দু আরো কাছাকাছি আনুন")
-                return
-
-            middle_x = (points[1].x + points[2].x) / 2
-            middle_y = (points[1].y + points[2].y) / 2
-            middle = Point(middle_x, middle_y)
-            p1, p2, p3 = self.angle_approximator.get_angle_points(
-                points[0], middle, points[3]
-            )
-            approximated_angle = self.angle_approximator.get_approximated_angle(
-                p1, p2, p3, rad=False
-            )
-
-            title.write("আনুমানিক প্রদর্শন :brain:")
-            self.animate.draw_angle(
-                [
-                    p1,
-                    p2,
-                    p3,
-                ],
-                stroke_width=self.stroke_width,
-                stroke_color=self.stroke_color,
-            )
-        with col3:
-            if not approximated_angle:
-                st.write("এখনো কোন কোণ আকা হয়নি")
-                return
-            answer = st.pills(
-                "বলতে পারো কি কোন একেছো?", ["সূক্ষ্মকোণ", "সমকোন", "সরলকোণ", "স্থূলকোণ"]
-            )
-            if answer and st.button("উত্তর মিলাই"):
-                status, message = self.__match_angle_answer(approximated_angle, answer)
-                if status:
-                    st.balloons()
-                    self.animate.write(message)
-
-                else:
-                    self.animate.write(message)
-
-    @st.fragment
     def freedraw(self):
-        col1, col2 = st.columns([2, 5], gap="large")
-        width = 700
-        height = 400
-
+        width = 1000
+        height = 500
+        col1, col2 = st.columns([3, 1], gap="large")
         with col1:
-            drawing_mode = st.selectbox(
-                "ড্রয়িং টুল:",
-                ("point", "freedraw", "line", "rect", "circle", "transform"),
-                index=1,
-            )
-
-            point_display_radius = 3
-            if drawing_mode == "point":
-                point_display_radius = st.slider("বিন্দুর ব্যস্যার্ধ: ", 1, 25, 3)
-            bg_image = st.file_uploader("ব্যাকগ্রাউন্ডের ছবি:", type=["png", "jpg"])
-            if bg_image:
-                bg_image = Image.open(bg_image)
-        with col2:
             canvas_result = st_canvas(
                 fill_color="rgba(255, 165, 0, 0.3)",
-                drawing_mode=drawing_mode,
+                drawing_mode=self.drawing_mode,
                 background_color=self.bg_color,
-                background_image=bg_image if bg_image else None,
+                background_image=self.bg_image if self.bg_image else None,
                 stroke_width=self.stroke_width,
                 stroke_color=self.stroke_color,
                 width=width,
                 height=height,
-                point_display_radius=point_display_radius,
+                point_display_radius=self.point_display_radius,
                 key="freedraw_canvas",
             )
 
         # if bg_image and st.button("ব্যাকগ্রাউন্ড সরান", icon=":material/delete_forever:"):
         #     bg_image = None
         #     st.rerun()
-
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_name = f"interactive_study_{timestamp}.png"
         if canvas_result.image_data is not None:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            file_name = f"interactive_study_{timestamp}.png"
-            drawn_img = Image.fromarray((canvas_result.image_data).astype("uint8"))
-
-            if bg_image:
-                background = bg_image.convert("RGBA").resize((width, height))
-                combined_img = Image.alpha_composite(background, drawn_img)
-            else:
-                combined_img = drawn_img
-            # Save to in-memory file
-            buffer = BytesIO()
-            combined_img.save(buffer, format="PNG")
-            buffer.seek(0)
-            st.download_button(
-                label="ডাউনলোড করি",
-                data=buffer,
-                file_name=file_name,
-                mime="image/png",
-                icon=":material/download:",
+            buffer = self.__download_image(
+                canvas_result.image_data, width=width, height=height
             )
+        col2.download_button(
+            label="ডাউনলোড করি",
+            data=buffer,
+            file_name=file_name,
+            mime="image/png",
+            icon=":material/download:",
+        )
+
+    def __download_image(self, image, width, height):
+        drawn_img = Image.fromarray((image).astype("uint8"))
+
+        if self.bg_image:
+            background = self.bg_image.convert("RGBA").resize((width, height))
+            combined_img = Image.alpha_composite(background, drawn_img)
+        else:
+            combined_img = drawn_img
+        # Save to in-memory file
+        buffer = BytesIO()
+        combined_img.save(buffer, format="PNG")
+        buffer.seek(0)
+        return buffer
 
     def __match_angle_answer(self, approximated_deg, given_answer):
         approximated_deg = (approximated_deg + 360) % 360
