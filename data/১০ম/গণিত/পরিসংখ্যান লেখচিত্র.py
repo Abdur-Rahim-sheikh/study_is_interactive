@@ -3,10 +3,11 @@ from itertools import accumulate
 import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
-from domain.services import Animate
-from domain import BasePage
-from domain.utils import strToList
 from matplotlib.axes import Axes
+
+from domain import BasePage
+from domain.services import Animate
+from domain.utils import strToList
 
 
 class StatisticsGraph(BasePage):
@@ -47,25 +48,24 @@ class StatisticsGraph(BasePage):
     def take_input(self):
         col1, col2, col3 = st.columns([1, 1, 5])
         starter = 0.0
-        with col1:
-            starter = st.number_input(
-                label="শ্রেণি শুরু",
-                min_value=0.0,
-                value=0.0,
-                step=0.5,
-            )
 
-        with col2:
-            diff = st.number_input(
-                label="শ্রেণি ব্যবধানঃ ",
-                value=5,
-                min_value=1,
-            )
-        with col3:
-            freqs = st.text_input(
-                label="গনসংখ্যাঃ", help="গনসংখ্যা লিখুন যেমনঃ ৫, ১০, ২০, ১৫, ১০"
-            )
-            freqs = strToList(freqs)
+        starter = col1.number_input(
+            label="শ্রেণি শুরু",
+            min_value=0.0,
+            value=0.0,
+            step=0.5,
+        )
+
+        diff = col2.number_input(
+            label="শ্রেণি ব্যবধানঃ ",
+            value=5,
+            min_value=1,
+        )
+
+        freqs = col3.text_input(
+            label="গনসংখ্যাঃ", help="গনসংখ্যা লিখুন যেমনঃ ৫, ১০, ২০, ১৫, ১০"
+        )
+        freqs = strToList(freqs)
 
         return freqs, starter, diff
 

@@ -54,7 +54,7 @@ class StatisticsFrequencyDistribution(BasePage):
         col1, col2 = st.columns([3, 1], gap="large", vertical_alignment="bottom")
         with col1:
             dist = st.text_area(
-                value=",".join([str(i) for i in arr]),
+                placeholder=",".join([str(i) for i in arr]),
                 label="Enter the frequency distribution",
                 help="comma separated: 1,2,3,4,5",
             )

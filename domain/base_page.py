@@ -18,6 +18,9 @@ class BasePage(ABC):
         self.menu_items = menu_items
         self.setup()
 
+    def __hash__(self):
+        return str(self.origin.absolute())
+
     def setup(self):
         st.set_page_config(
             page_title=self.header,

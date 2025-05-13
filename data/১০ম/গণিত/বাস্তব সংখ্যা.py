@@ -1,18 +1,15 @@
 import streamlit as st
+from sympy import nsimplify
 
 from domain import BasePage
 from domain.services import GraphVisualize
-from public.resources.class_10.math.real_numbers import RealNumbers as numberCategorize
 from domain.utils.to_bangla_digit import toBanglaDigit
-from sympy import nsimplify
+from public.resources.class_10.math.real_numbers import RealNumbers as numberCategorize
 
 
 class RealNumbers(BasePage):
     def __init__(self):
         super().__init__(file_location=str(__file__))
-
-    def build_page(self, **args):
-        pass
 
     def adding_latex_power(self, number, power):
         if power != 1:
@@ -39,21 +36,21 @@ class RealNumbers(BasePage):
             if chosen_option == "দশমিক":
                 with st.container(height=100):
                     col21, col22 = st.columns([1, 2])
-                    with col21:
-                        power = st.number_input(
-                            label="শক্তি",
-                            help=r"শক্তি নির্বাচন করুন, 0.5 = √, 0.33= ³√",
-                            min_value=1 / 3,
-                            value=1 / 1,
-                            step=1 / 3,
-                        )
-                    with col22:
-                        value = st.text_input(
-                            label="একটি বাস্তব সংখ্যা লিখুনঃ ",
-                            placeholder="1.25'243'",
-                            value="0",
-                            help="- আপনি এপস্ট্রপি লিখতে চাইলে (') ব্যবহার করুন। \n- যেমনঃ 520.235'0238'",
-                        )
+
+                    power = col21.number_input(
+                        label="শক্তি",
+                        help=r"শক্তি নির্বাচন করুন, 0.5 = √, 0.33= ³√",
+                        min_value=1 / 3,
+                        value=1 / 1,
+                        step=1 / 3,
+                    )
+
+                    value = col22.text_input(
+                        label="একটি বাস্তব সংখ্যা লিখুনঃ ",
+                        placeholder="1.25'243'",
+                        value="0",
+                        help="- আপনি এপস্ট্রপি লিখতে চাইলে (') ব্যবহার করুন। \n- যেমনঃ 520.235'0238'",
+                    )
 
                 if "'" in value:
                     apostrophe = True
@@ -65,39 +62,39 @@ class RealNumbers(BasePage):
                 render = ""
                 with st.container(height=100):
                     col21, col22, col23 = st.columns(3)
-                    with col21:
-                        power = 1
-                        if chosen_option == "মিশ্র":
-                            whole_number = st.number_input(
-                                label="পূর্ণ সংখ্যা",
-                                help="একটি পূর্ণ সংখ্যা লিখুন",
-                                min_value=1,
-                                format="%d",
-                            )
-                            render = rf"{toBanglaDigit(whole_number)}\ "
-                        else:
-                            power = st.number_input(
-                                label="শক্তি",
-                                help="শক্তি নির্বাচন করুন",
-                                min_value=1 / 3,
-                                value=1 / 1,
-                                step=1 / 3,
-                            )
-                    with col22:
-                        numerator = st.number_input(
-                            label="লবঃ",
-                            format="%d",
-                            step=1,
-                            value=1,
+
+                    power = 1
+                    if chosen_option == "মিশ্র":
+                        whole_number = col21.number_input(
+                            label="পূর্ণ সংখ্যা",
                             help="একটি পূর্ণ সংখ্যা লিখুন",
-                        )
-                    with col23:
-                        denominator = st.number_input(
-                            label="হরঃ",
                             min_value=1,
                             format="%d",
-                            help="একটি পূর্ণ সংখ্যা লিখুন",
                         )
+                        render = rf"{toBanglaDigit(whole_number)}\ "
+                    else:
+                        power = col21.number_input(
+                            label="শক্তি",
+                            help="শক্তি নির্বাচন করুন",
+                            min_value=1 / 3,
+                            value=1 / 1,
+                            step=1 / 3,
+                        )
+
+                    numerator = col22.number_input(
+                        label="লবঃ",
+                        format="%d",
+                        step=1,
+                        value=1,
+                        help="একটি পূর্ণ সংখ্যা লিখুন",
+                    )
+
+                    denominator = col23.number_input(
+                        label="হরঃ",
+                        min_value=1,
+                        format="%d",
+                        help="একটি পূর্ণ সংখ্যা লিখুন",
+                    )
 
                 number = (
                     (whole_number * denominator + numerator) / denominator

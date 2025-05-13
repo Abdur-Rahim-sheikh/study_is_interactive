@@ -42,13 +42,17 @@ class GeometryPage(BasePage):
         # tabs = st.tabs(["কোন", "ত্রিভুজ", "চতুর্ভুজ", "পরীক্ষা", "আঁকিবুঁকি"])
         tabs = st.tabs(["কোন", "ত্রিভুজ", "আঁকিবুঁকি"])
         with tabs[0]:
+            st.session_state.pop("angle_canvas", None)
             self.angle()
-            pass
         with tabs[1]:
+            st.session_state.pop("triangle_canvas", None)
+
             self.triangle()
         with tabs[2]:
+            st.session_state.pop("freedraw_canvas", None)
             self.freedraw()
 
+    @st.fragment
     def triangle(self):
         col1, col2, col3 = st.columns(3)
         bg_image = None
@@ -68,7 +72,7 @@ class GeometryPage(BasePage):
                 stroke_color=self.stroke_color,
                 height=self.height,
                 width=self.width,
-                key=f"{__name__}_triangle_canvas",
+                key="triangle_canvas",
             )
 
         with col2:
@@ -138,6 +142,7 @@ class GeometryPage(BasePage):
                 else:
                     self.animate.write(message)
 
+    @st.fragment
     def angle(self):
         col1, col2, col3 = st.columns(3)
         bg_image = None
@@ -218,9 +223,10 @@ class GeometryPage(BasePage):
                 else:
                     self.animate.write(message)
 
+    @st.fragment
     def freedraw(self):
         col1, col2 = st.columns([2, 5], gap="large")
-        width = 600
+        width = 700
         height = 400
 
         with col1:
@@ -247,7 +253,7 @@ class GeometryPage(BasePage):
                 width=width,
                 height=height,
                 point_display_radius=point_display_radius,
-                key=f"{__file__}_freedraw_canvas",
+                key="freedraw_canvas",
             )
 
         # if bg_image and st.button("ব্যাকগ্রাউন্ড সরান", icon=":material/delete_forever:"):
