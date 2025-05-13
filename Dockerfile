@@ -1,8 +1,13 @@
-FROM python:3.13.3-alpine3.21
+FROM python:3.12.10-slim-bookworm
 
-WORKDIR /app
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+WORKDIR /interactive_study
+
+COPY ./pyproject.toml ./uv.lock ./
+RUN uv sync --frozen
+
 COPY . .
-RUN pip install uv
-RUN uv sync
+ENV PATH="/study_is_interactive/.venv/bin:$PATH"
 
-CMD ["uv","run", "main.py"]
+CMD ["streamlit","run", "main.py"]

@@ -1,0 +1,14 @@
+services:
+  streamlit:
+    build: .
+
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /interactive_study
+          ignore:
+            - .venv/
+            - .pytest_cache
+        - action: rebuild
+          path: ./pyproject.toml
