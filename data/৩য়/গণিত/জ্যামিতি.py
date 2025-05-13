@@ -252,8 +252,9 @@ class GeometryPage(BasePage):
 
     @st.fragment
     def freedraw(self):
-        width = 1000
-        height = 500
+        width = 1100
+        height = 550
+        # we can write a bg_image resizer
         col1, col2 = st.columns([3, 1], gap="large")
         with col1:
             canvas_result = st_canvas(
@@ -269,22 +270,19 @@ class GeometryPage(BasePage):
                 key="freedraw_canvas",
             )
 
-        # if bg_image and st.button("ব্যাকগ্রাউন্ড সরান", icon=":material/delete_forever:"):
-        #     bg_image = None
-        #     st.rerun()
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         file_name = f"interactive_study_{timestamp}.png"
         if canvas_result.image_data is not None:
             buffer = self.__download_image(
                 canvas_result.image_data, width=width, height=height
             )
-        col2.download_button(
-            label="ডাউনলোড করি",
-            data=buffer,
-            file_name=file_name,
-            mime="image/png",
-            icon=":material/download:",
-        )
+            col2.download_button(
+                label="ডাউনলোড করি",
+                data=buffer,
+                file_name=file_name,
+                mime="image/png",
+                icon=":material/download:",
+            )
 
     def __download_image(self, image, width, height):
         drawn_img = Image.fromarray((image).astype("uint8"))
