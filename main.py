@@ -26,12 +26,14 @@ def backToHome():
 
 def getTopics(chapter_path: PosixPath):
     topics = []
+    names = list(chapter_path.iterdir())
 
-    for topic in chapter_path.iterdir():
+    for topic in sorted(names):
         if not topic.suffix == ".py" or topic.stem.startswith("__"):
             continue
 
         topics.append(st.Page(str(topic.absolute()), title=topic.stem))
+
     return topics
 
 
