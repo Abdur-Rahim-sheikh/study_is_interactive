@@ -878,7 +878,7 @@ dev = [
 requires-dist = [
     { name = "graphviz", specifier = ">=0.20.3" },
     { name = "matplotlib", specifier = ">=3.10.1" },
-    { name = "streamlit", specifier = "<=1.40.0" },
+    { name = "streamlit", specifier = "==1.40.0" },
     { name = "streamlit-drawable-canvas", specifier = ">=0.9.3" },
     { name = "sympy", specifier = ">=1.13.3" },
 ]
