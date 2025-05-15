@@ -20,7 +20,7 @@ class StatisticsGraph(BasePage):
     def build_page(self, **args):
         freqs, starter, diff = self.take_input()
         df = self.build_df(freqs, starter, diff, ["শ্রেণি ব্যবধান", "গনসংখ্যা"])
-        st.dataframe(df.T)
+        st.dataframe(df.T, use_container_width=True)
         if st.button("সমাধান দেখুন"):
             self.show_solution(freqs, starter, diff)
 
@@ -85,9 +85,18 @@ class StatisticsGraph(BasePage):
         col1, col2, col3 = st.columns(3)
         with col1:
             # aotolekh = graph
-            self.animate.write("ছক কাগজের ")
+            with st.container(height=200):
+                self.animate.write(
+                    (
+                        f"ছক কাগজের প্রতি ঘরকে {diff} একক ধরে, x-অক্ষ বরাবর শ্রেণি সীমা"
+                        "এবং y-অক্ষ বরাবর গনসংখ্যা নিয়ে নিচের আয়তলেখ আঁকি"
+                    )
+                )
             fig1, ax1 = plt.subplots()
             self.__attach_plt_attributes(ax1, "Histogram", starter, diff, freqs)
+            ax1.set_xlabel("x", loc="right", fontsize=16, fontweight="bold")
+            ax1.set_ylabel("y", loc="top", fontsize=16, fontweight="bold", rotation=0)
+
             ax1.bar(
                 range(len(freqs)),
                 freqs,
@@ -100,9 +109,22 @@ class StatisticsGraph(BasePage):
             st.pyplot(fig1)
         with col2:
             # gonosongkhya = frequency polygon
+            with st.container(height=200):
+                self.animate.write(
+                    (
+                        f"ছক কাগজের প্রতি ঘরকে {diff} একক ধরে, x-অক্ষ বরাবর শ্রেণি সীমা "
+                        "এবং y-অক্ষ বরাবর গনসংখ্যা নিয়ে নিচের আয়তলেখ আঁকি "
+                        "এবার আয়তলেখের আয়তসমূহের ভূমির বিপরীত বাহুর মধ্যবিন্দু যা শ্রেণির মধ্যবিন্দু চিহ্নিত করি "
+                        "এখন চিহ্নিত মধ্যবিন্দুসমূহ রেখাংশ দ্বারা সংযুক্ত করি। প্রথম শ্রেণির প্রান্তবিন্দু ও শেষ শ্রেণির প্রান্তবিন্দুদ্বয়কে "
+                        "শ্রেণি ব্যবধান নির্দেশক x-অক্ষের সাথে সংযুক্ত করে গনসংখ্যা বহুভুজ অঙ্কন করা হল।"
+                    )
+                )
             fig2, ax2 = plt.subplots()
 
             self.__attach_plt_attributes(ax2, "Frequency Polygon", starter, diff, freqs)
+            ax2.set_xlabel("x", loc="right", fontsize=16, fontweight="bold")
+            ax2.set_ylabel("y", loc="top", fontsize=16, fontweight="bold", rotation=0)
+
             ax2.plot(
                 [0] + [idx + 0.5 for idx in range(len(freqs))] + [len(freqs)],
                 [0] + freqs + [0],
@@ -124,8 +146,16 @@ class StatisticsGraph(BasePage):
 
         with col3:
             # ojiv rekha = Ogive Graph
+            with st.container(height=200):
+                self.animate.write(f"""
+                    গনসংখ্যা নিবেশনের ক্রমযোজিত গনসংখ্যা সারণি ব্যবহার করে ছক কাগজের উভয় অক্ষে 
+                    প্রতি {diff} ঘরকে এক একক ধরে প্রদত্ত উপাত্তের ক্রমযোজিত গনসংখ্যার অজিভ রেখা আকা হলো। 
+                """)
             fig3, ax3 = plt.subplots()
             self.__attach_plt_attributes(ax3, "Ogive Curve", starter, diff, freqs)
+            ax3.set_xlabel("x", loc="right", fontsize=16, fontweight="bold")
+            ax3.set_ylabel("y", loc="top", fontsize=16, fontweight="bold", rotation=0)
+
             ax3.plot(
                 range(len(freqs)),
                 list(accumulate(freqs)),
@@ -138,4 +168,25 @@ class StatisticsGraph(BasePage):
 
 
 sg = StatisticsGraph()
+msg = """
+    পরিসংখ্যান লেখচিত্রের ব্যবহার যানতে নিচের বইয়ের উদাহরণ টি দেখি, 
+
+    বই উদাহরণ ৩ঃ  আপনার কোন একটি স্কুলের ১০ম শ্রেণির ৬০ জন শিক্ষার্থির ওজনের গনসংখ্যা নিবেশন দেয়া আছে, 
+    
+    | ওজন (কিলোগ্রাম) | 45.5 - 50.5 | 50.5 - 55.5| 55.5 - 60.5 | 60.5 - 65.5| 65.5 - 70.5 |
+    |---|---|---|---|---|---|
+    | গনসংখ্যা (শিক্ষার্থি সংখ্যা) | 5 | 10 | 20 | 15 | 10| 
+
+    আপনাকে এই তথ্য থেকে আয়তলেখ (Histogram), 
+    বহুভুজ (Frequency Polygon) ও অজিভ রেখা (Ogive Curve) আঁকতে পারেন। 
+    
+    প্রকৃত পক্ষে আপনার এতগুলি তথ্যের ও দরকার নেই, আপনার যানতে হবে
+    - `শ্রেণি শুরু` যেটা এখানে `45.5`, 
+    - `শ্রেণি ব্যবধান` যেটা এখানে `5`
+    - `গনসংখ্যার মান` গুলি। যা আমরা গনসংখ্যা বক্সে কমা কমা দিয়ে `5 , 10 , 20 , 15 , 10`এভাবে লিখতে পারি। 
+    
+    ব্যাস এতেই হয়ে গেল, যত বিচিত্র আর বড় বিন্যাস ই হোক না কেন আপনি উত্তর পেয়ে যাবেন। 
+    সমাধান দেখুন ক্লিক করেই। তাই নিজে খাতায় করুন আর সঠিক কিনা ভুল যাচাই করে নিন। 
+"""
+sg.info(msg)
 sg.build_page()

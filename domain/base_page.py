@@ -21,8 +21,14 @@ class BasePage(ABC):
     def __hash__(self):
         return hash(str(self.origin.absolute()))
 
-    def info(self, message: str, book_link: str = None, tutorrial_link: str = None):
-        with st.expander(f"{self.topic}: কিভাবে কাজ করে?", expanded=False):
+    def info(
+        self,
+        message: str,
+        book_link: str = None,
+        tutorrial_link: str = None,
+        expanded=False,
+    ):
+        with st.expander(f"{self.topic}: কিভাবে কাজ করে?", expanded=expanded):
             st.write(message)
             if book_link:
                 st.markdown(f"[{self.chapter} বইয়ের লিংক]({book_link})")
