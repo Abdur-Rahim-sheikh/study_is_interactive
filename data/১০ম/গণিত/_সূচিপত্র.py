@@ -7,4 +7,5 @@ class Index(BasePage):
 
 
 index = Index()
+index.info("পছন্দনীয় টপিকে ক্লিক করুন", expanded=True)
 index.index_page()

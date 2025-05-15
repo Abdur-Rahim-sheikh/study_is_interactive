@@ -18,35 +18,26 @@ class StatisticsFrequencyDistribution(BasePage):
         super().__init__(file_location=str(__file__))
         self.animate = Animate()
 
-        self.tally_images = []
+        self.tally_images = self.__load_images(tally_src)
 
+    @staticmethod
+    @st.cache_data
+    def __load_images(tally_src):
+        tally_images = []
         empty = Image.new("RGBA", (20, 40), (255, 255, 255, 0))
         buffer = BytesIO()
         empty.save(buffer, format="PNG")
         base_64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
-        self.tally_images.append(f"data:image/png;base64,{base_64}")
-
+        tally_images.append(f"data:image/png;base64,{base_64}")
         for i in range(1, 6):
             img = Image.open(f"{tally_src}/tally_{i}.png").convert("RGBA")
             buffer = BytesIO()
             img.save(buffer, format="PNG")
             base_64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
-            self.tally_images.append(f"data:image/png;base64,{base_64}")
+            tally_images.append(f"data:image/png;base64,{base_64}")
+        return tally_images
 
-    def parse_integer(self, value, sep=","):
-        value = value.strip().strip(",")
-        if not value:
-            return []
-        try:
-            return [int(i) for i in value.split(sep)]
-        except ValueError:
-            st.error(f"Invalid input. Please enter integers separated by ({sep}).")
-
-    def build_page(self, **args):
-        """
-        if passed "annotate_cumulative_sum" as True,
-        it will annotate how cumulative sum is calculated
-        """
+    def build_page(self):
         # fmt: off
         arr = [14,14,14,13,12,13,10,10,11,12,11,10,9,8,
             9,11,10,10,8,9,7,6,6,6,6,7,8,9,9,8,7,]
@@ -55,14 +46,17 @@ class StatisticsFrequencyDistribution(BasePage):
         with col1:
             dist = st.text_area(
                 placeholder=",".join([str(i) for i in arr]),
-                label="Enter the frequency distribution",
-                help="comma separated: 1,2,3,4,5",
+                label="গনসংখ্যা মাণগুলি লেখি ",
+                help="সংখ্যাগুলিকে কমা দিয়ে আলাদা কর 12,2,3,4,5",
             )
             dist = strToList(dist)
+            if dist and min(dist) < 0:
+                st.error("গনসংখ্যা ঋণাত্মক হতে পারবে না")
+                st.stop()
         with col2:
             diff = st.number_input(label="শ্রেণি ব্যবধানঃ ", value=5, min_value=1)
 
-        if len(dist) > 0 and st.button("See frequency distribution"):
+        if len(dist) > 0 and st.button("গনসংখ্যা নিবেশন দেখি"):
             df, info = self.build_df(dist, diff=diff)
             self.show_info(info)
             time.sleep(0.5)
@@ -184,4 +178,25 @@ class StatisticsFrequencyDistribution(BasePage):
 
 
 sfd = StatisticsFrequencyDistribution()
+# fmt: off
+example_values = []
+
+# fmt: on
+md = """
+    আমরা এখানে গনসংখ্যা নিবেশন সারণি অনুশীলন করবো।
+    
+    উদাহরন ১ঃ  কোন এক শীত মৌসুমে শ্রীমঙ্গলে জানুয়ারি মাসের ৩১ দিনের সর্বনিম্ম তাপমাত্রা ডিগ্রি সেলসিয়াসে দেওয়া হল।
+
+    ```python
+    14, 14, 13, 12, 13, 10, 10, 11, 12, 11, 10, 9, 8, 9, 11, 10, 10, 8,9, 7, 6, 6, 6, 6, 7, 8, 9, 9, 8, 7
+    ```
+    সর্বনিম্ম তাপমাত্রার গনসংখ্যা নিবেশন সারণি তৈরি করো। 
+
+    এই অংকটি করার জন্য আমাদের আর একটা জিনিস দরকার, আর তা হল শ্রেণি ব্যবধান।
+    এবার দেখ নিচের প্রথম টেক্সটবক্সে গনসংখ্যা গুলি কমা, কমা দিয়ে লিখে দাও, এবং ডান পাশের টেক্সটবক্সে শ্রেণি ব্যবধান লিখে দাও।
+    তারপর `গনসংখ্যা নিবেশন দেখি` বাটনে ক্লিক করো।
+    এবার সঠিক উত্তরটি তোমার খাতায় লেখা উত্তরের সাথে মিলাও। 
+
+    """
+sfd.info(md)
 sfd.build_page()

@@ -14,6 +14,9 @@ class RealNumbers(BasePage):
     def adding_latex_power(self, number, power):
         if power != 1:
             num, denom = nsimplify(power).as_numer_denom()
+            if num == 1 and denom == 2:
+                number = rf"\sqrt{{{number}}}"
+                return number
             if denom != 1:
                 number = rf"\sqrt[{denom}]{{{number}}}"
             if num != 1:
@@ -108,6 +111,22 @@ class RealNumbers(BasePage):
 
 
 realNumbers = RealNumbers()
+message = """
+    আমরা জানি বাস্তব সংখ্যাকে বিভিন্ন ভাবে ভাগ করা যায়, তবে লেখার ক্ষেত্রেও ৩ ভাবে ভাগ করা যায়। 
+    দশমিক ভাবে, ভগ্নাংশ রূপে, মিশ্র রূপে। এবং এদের উপর বিভিন্ন প্রকার শক্তি লেখা যেতে পারে, তাই 
+    একটি সংখ্যা কি ধরনের বাস্তব সংখ্যা তা পরীক্ষা করার জন্যই এই টপিক টি তৈরি করা। 
+
+    উদাহরণ ১ঃ 
+    - $\sqrt{3}$ লিখতে $\Rightarrow$ `শক্তি = 0.5`, `বাস্তব সংখ্যা লিখুনঃ 3`
+    - 4 লিখতে $\Rightarrow$ `শক্তি = 1`,  `বাস্তব সংখ্যা লিখুনঃ 4`
+
+    উদাহরণ ৩ঃ 
+    - $\\frac{95}{37}$ লিখতে $\Rightarrow$ `শক্তি = 1`, `লবঃ 95`, `হরঃ 37`
+
+    উদাহরণ ৫ঃ 
+    - $5.234^\circ57^\circ$ পৌনঃপুনিক লিখতে $\Rightarrow$ `শক্তি = 1`, `বাস্তব সংখ্যা লিখুনঃ 5.234'57'`
+"""
+realNumbers.info(message)
 categorizer = numberCategorize()
 categories = categorizer.getCategories
 finalCategories = categorizer.getFinalCategories
