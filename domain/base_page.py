@@ -19,7 +19,15 @@ class BasePage(ABC):
         self.setup()
 
     def __hash__(self):
-        return str(self.origin.absolute())
+        return hash(str(self.origin.absolute()))
+
+    def info(self, message: str, book_link: str = None, tutorrial_link: str = None):
+        with st.expander(f"{self.topic}: কিভাবে কাজ করে?", expanded=False):
+            st.write(message)
+            if book_link:
+                st.markdown(f"[{self.chapter} বইয়ের লিংক]({book_link})")
+            if tutorrial_link:
+                st.video(tutorrial_link)
 
     def setup(self):
         st.set_page_config(

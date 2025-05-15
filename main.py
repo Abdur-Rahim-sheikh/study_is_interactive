@@ -16,7 +16,7 @@ def homeView():
 
     grade = st.selectbox("কোন ক্লাস দেখতে চান?", grades, key="selected_grade")
 
-    if grade:
+    if grade and st.button("প্রবেশ করুন"):
         st.session_state.grade = grade
         st.rerun()
 
@@ -38,6 +38,7 @@ def homeView():
         st.markdown(
             "[এনসিটিবি বইয়ের ২০২৫](https://nctb.portal.gov.bd/site/page/d01e72b0-8ecd-4c81-bffd-c9e117b7fdad/-)"
         )
+    st.warning("এপটি মোবাইলে ব্যবহারের জন্য তৈরি করা হয় নি, ল্যাপটপ বা ডেস্কটপে ব্যবহার করুন।")
 
 
 def backToHome():
