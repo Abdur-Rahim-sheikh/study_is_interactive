@@ -22,13 +22,16 @@ class AngleApproximator:
         self.total_split = quadrant_split * 4
 
         self.background_path = Path(background_path)
-        self.images = {}
 
     def __angle_preview(self, mode, graph_style=True):
         key = mode + "_graph" if graph_style else mode
-        if key not in self.images:
-            self.images[key] = Image.open(self.background_path / f"{key}.png")
-        return self.images[key]
+        try:
+            image = Image.open(self.background_path / f"{key}.png")
+        except FileNotFoundError:
+            raise FileNotFoundError(
+                f"could not find this path {self.background_path / f'{key}.png'}"
+            )
+        return image
 
     def get_angle_preview(self, graph_style=True) -> Image:
         return self.__angle_preview("angle", graph_style=graph_style)
