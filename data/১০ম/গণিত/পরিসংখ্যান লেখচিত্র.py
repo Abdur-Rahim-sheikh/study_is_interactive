@@ -117,7 +117,8 @@ class StatisticsGraph(BasePage):
                         "এবার আয়তলেখের আয়তসমূহের ভূমির বিপরীত বাহুর মধ্যবিন্দু যা শ্রেণির মধ্যবিন্দু চিহ্নিত করি "
                         "এখন চিহ্নিত মধ্যবিন্দুসমূহ রেখাংশ দ্বারা সংযুক্ত করি। প্রথম শ্রেণির প্রান্তবিন্দু ও শেষ শ্রেণির প্রান্তবিন্দুদ্বয়কে "
                         "শ্রেণি ব্যবধান নির্দেশক x-অক্ষের সাথে সংযুক্ত করে গনসংখ্যা বহুভুজ অঙ্কন করা হল।"
-                    )
+                    ),
+                    interval=0.01,
                 )
             fig2, ax2 = plt.subplots()
 
@@ -147,10 +148,13 @@ class StatisticsGraph(BasePage):
         with col3:
             # ojiv rekha = Ogive Graph
             with st.container(height=200):
-                self.animate.write(f"""
-                    গনসংখ্যা নিবেশনের ক্রমযোজিত গনসংখ্যা সারণি ব্যবহার করে ছক কাগজের উভয় অক্ষে 
-                    প্রতি {diff} ঘরকে এক একক ধরে প্রদত্ত উপাত্তের ক্রমযোজিত গনসংখ্যার অজিভ রেখা আকা হলো। 
-                """)
+                self.animate.write(
+                    f"""
+                গনসংখ্যা নিবেশনের ক্রমযোজিত গনসংখ্যা সারণি ব্যবহার করে ছক কাগজের উভয় অক্ষে 
+                প্রতি {diff} ঘরকে এক একক ধরে প্রদত্ত উপাত্তের ক্রমযোজিত গনসংখ্যার অজিভ রেখা আকা হলো। 
+                """,
+                    interval=0.02,
+                )
             fig3, ax3 = plt.subplots()
             self.__attach_plt_attributes(ax3, "Ogive Curve", starter, diff, freqs)
             ax3.set_xlabel("x", loc="right", fontsize=16, fontweight="bold")
