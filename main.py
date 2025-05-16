@@ -2,6 +2,7 @@ from pathlib import Path, PosixPath
 
 import streamlit as st
 
+app_name = "Interactive Study"
 if "grade" not in st.session_state:
     st.session_state["grade"] = None
 
@@ -10,8 +11,8 @@ grades = [None] + [grade.name for grade in Path(GRADE_SRC).iterdir()]
 
 
 def homeView():
-    st.set_page_config(page_title="হোম পেজ", layout="centered")
-    st.header("Interactive Study")
+    st.set_page_config(page_title=app_name, layout="centered")
+    st.header(app_name)
     st.subheader("ইন্টারেক্টিভ স্টাডি প্ল্যাটফর্ম")
 
     grade = st.selectbox("কোন ক্লাস দেখতে চান?", grades, key="selected_grade")
