@@ -1,7 +1,6 @@
 import streamlit as st
 
 from domain import BasePage
-from domain.models import NumberState
 from domain.services import Animate, NumberConverter
 
 
@@ -11,20 +10,6 @@ class NumberConversion(BasePage):
         self.nc = NumberConverter()
         self.animate = Animate()
         self.available_bases = self.nc.get_available_bases()
-
-    def __prepare_decimal_integer(self, states: list[NumberState], number: str):
-        lines = []
-        first = f"{states[0].to_base} | {number}   LSB"
-        lines.append(first)
-        for state in states[:-1]:
-            intermediate = (
-                f"{state.to_base} | {state.decimal_result} -> {state.decimal_partial}"
-            )
-            lines.append(intermediate)
-
-        last = f"{states[-1].to_base} | {states[-1].decimal_result}   MSB"
-        lines.append(last)
-        return "\n".join(lines)
 
     def form(self) -> tuple:
         with st.form("number_conversion"):
@@ -56,12 +41,13 @@ class NumberConversion(BasePage):
         if not response:
             return
         num, base_from, base_to = response
-        states = self.nc.convert(num, base_from, base_to)
-        decimal_part = self.__prepare_decimal_integer(states, num)
-        self.animate.code(decimal_part, language=None)
-        st.write(states)
+        answer, description = self.nc.convert(num, base_from, base_to)
+        self.animate.code(description["to_decimal"], language=None)
+        self.animate.code(description["from_decimal"]["integer_part"], language=None)
+        self.animate.code(description["from_decimal"]["fraction_part"], language=None)
+        st.write(answer)
 
 
 nc = NumberConversion()
-nc.build_page()
 nc.info(message="🚧 Under construction")
+nc.build_page()

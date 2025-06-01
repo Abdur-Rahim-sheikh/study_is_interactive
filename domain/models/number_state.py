@@ -10,41 +10,41 @@ class NumberState:
     from_base: int
     to_base: int
     decimal_result: float
-    decimal_partial: float = None
+    decimal_partial: float = 0.0
 
-    def get_converter(self):
-        """
-        Get converter
-        """
-        convert = None
-        if self.to_base == "binary":
+    def from_decimal(self, number: float, base: int, precision: int = 10) -> str:
+        int_part = int(number)
+        decimal_part = float(number) - int_part
+        char_box = "0123456789ABCDEF"
+        answer_int = ""
+        while int_part > 0:
+            remainder = int_part % base
+            int_part = int_part // base
+            answer_int += char_box[remainder]
 
-            def convert(x):
-                return bin(x)[2:]
-        elif self.to_base == "octal":
+        answer_int = answer_int[::-1]
+        answer_frac = ""
+        while decimal_part > 0 and precision > 0:
+            decimal_part *= base
+            int_part = int(decimal_part)
+            decimal_part -= int_part
+            answer_frac += char_box[int_part]
+            precision -= 1
+        answer = answer_int
+        if answer_frac:
+            answer += "." + answer_frac
+        if not answer:
+            answer = "0"
+        return answer
 
-            def convert(x):
-                return oct(x)[2:]
-        elif self.to_base == "decimal":
-
-            def convert(x):
-                return str(x)
-        else:
-
-            def convert(x):
-                return hex(x)[2:]
-
-        return convert
-
-    def get_formated(self) -> dict:
+    @property
+    def formated(self) -> dict:
         """
         Get formatted dict
         """
-        convert = self.get_converter()
-
         return {
             "from_base": self.from_base,
             "to_base": self.to_base,
-            "result": convert(self.decimal_result),
-            "partial": convert(self.decimal_result) if self.decimal_partial else None,
+            "result": self.from_decimal(self.decimal_result, self.to_base),
+            "partial": self.from_decimal(self.decimal_partial, self.to_base),
         }
