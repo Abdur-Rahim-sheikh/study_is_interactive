@@ -119,20 +119,33 @@ class NumberConverter:
         lines = []
         padding = 0
         space = 2
+        has_int = False
+        tem = f"দশমিক পূর্ণসংখ্যা {left} এর রূপান্তর করি"
+        lines.append(tem)
         if len(int_parts):
             tem = f"{int_parts[0].to_base} │ {left}"
             lines.append(tem)
             padding = len(tem) + 4
-
+            has_int = True
+        combined = ""
         for idx, state in enumerate(int_parts):
             lines.append(f"{' ' * space}╰{'─' * padding}")
-
+            combined += str(state.formated["partial"])
             if idx + 1 == len(int_parts):
                 tem2 = f"{' ' * (space + 2)}{state.decimal_result} ─── {state.decimal_partial}"
+                if state.decimal_partial > 9:
+                    tem2 += f"({state.formated['partial']})"
             else:
                 tem2 = f"{state.to_base} │ {state.decimal_result} ─── {state.decimal_partial}"
+                if state.decimal_partial > 9:
+                    tem2 += f"({state.formated['partial']})"
 
             lines.append(tem2)
+        tem = "এখানে ড্যাশ এর ডানপাশের ভাগশেষ গুলি নিচ থেকে উপরে সাজাই"
+        lines.append(tem)
+        tem = "সবচেয়ে নিচের অঙ্কটি সবচেয়ে গুরুত্বপূর্ণ (MSB) এবং সবচেয়ে উপরের অঙ্কটি সবচেয়ে কম গুরুত্বপূর্ণ (LSB)"
+        lines.append(tem)
+        lines.append("একত্র করে পাইঃ " + combined[::-1])
 
         answer_int = "\n".join(lines)
 
@@ -141,12 +154,18 @@ class NumberConverter:
 
         padding = 5
         horizontal = 0
+        has_frac = False
+        tem = f"দশমিক ভগ্নাংশ {right} এর রূপান্তর করি"
+        lines.append(tem)
         if len(frac_parts):
             space = len(right) + 2
             tem = f"{'#':<{padding - 1}}│{right:>{space}}"
             horizontal = len(tem) + 4
             lines.append(tem)
+            has_frac = True
+        combined = ""
         for state in frac_parts:
+            combined += state.formated["partial"]
             tem1 = f"{'│':>{padding}}{'x ' + str(state.to_base):>{space}}"
             tem2 = "─" * horizontal
             decimal_result = str(round(state.decimal_result, 8)).strip("0")
@@ -155,7 +174,16 @@ class NumberConverter:
             tem3 = f"{state.decimal_partial:<{padding - 1}}│{decimal_result:>{space}}"
             lines.extend([tem1, tem2, tem3])
 
+        tem = "এখানে ড্যাশ এর বামপাশের ভাগশেষ গুলি উপর থেকে নিচে সাজাই"
+        lines.append(tem)
+        tem = "সবচেয়ে উপরের অঙ্কটি সবচেয়ে গুরুত্বপূর্ণ (MSB) এবং সবচেয়ে নিচের অঙ্কটি সবচেয়ে কম গুরুত্বপূর্ণ (LSB)"
+        lines.append(tem)
+        lines.append("একত্র করে পাইঃ" + combined[::-1])
         answer_frac = "\n".join(lines)
+        if not has_int:
+            answer_int = ""
+        if not has_frac:
+            answer_frac = ""
         return answer_int, answer_frac
 
     def convert_via_decimal(
