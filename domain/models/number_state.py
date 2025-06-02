@@ -12,7 +12,12 @@ class NumberState:
     decimal_result: float
     decimal_partial: float = 0.0
 
-    def from_decimal(self, number: float, base: int, precision: int = 10) -> str:
+    def __post_init__(self, precision: int = 8):
+        self.precision = precision
+        self.decimal_partial = round(self.decimal_partial, precision)
+        self.decimal_result = round(self.decimal_result, precision)
+
+    def from_decimal(self, number: float, base: int) -> str:
         int_part = int(number)
         decimal_part = float(number) - int_part
         char_box = "0123456789ABCDEF"
@@ -24,6 +29,7 @@ class NumberState:
 
         answer_int = answer_int[::-1]
         answer_frac = ""
+        precision = self.precision
         while decimal_part > 0 and precision > 0:
             decimal_part *= base
             int_part = int(decimal_part)

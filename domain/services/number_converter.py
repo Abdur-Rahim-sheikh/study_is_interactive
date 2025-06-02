@@ -98,10 +98,13 @@ class NumberConverter:
         for ch in number:
             if ch == ".":
                 continue
-            tem.append(f"{int(ch, base)} * {base}^{idx}")
+            tem.append(f"{int(ch, base)} * {base}^{{{idx}}}")
             idx -= 1
         middle = " + ".join(tem)
-        return f"{number}\n{middle}\n{state.decimal_result}"
+        first = f"${number}_{{{base}}}$ সংখ্যাটিকে দশমিকে রূপান্তর করতে হবে"
+        second = f"${middle}$"
+        final = f"${state.decimal_result}_{{10}}$ -> হল আমাদের দশমিকে রূপান্তরকৃত মান"
+        return f"{first}\n{second}\n{final}"
 
     def describe_from_decimal(
         self, number: str, int_parts: list[NumberState], frac_parts: list[NumberState]
@@ -109,29 +112,45 @@ class NumberConverter:
         if "." not in number:
             number += "."
         left, right = number.split(".")
-        left, right = left.lstrip("0"), right.rstrip("0")
+        left, right = left.lstrip("0"), "." + right.rstrip("0")
         lines = []
-
+        padding = 0
+        space = 2
         if len(int_parts):
-            tem = f"{int_parts[0].to_base} | {left}"
+            tem = f"{int_parts[0].to_base} │ {left}"
             lines.append(tem)
-        last = int_parts.pop()
-        for state in int_parts:
-            tem = (
-                f"{state.to_base} | {state.decimal_result} --> {state.decimal_partial}"
-            )
-            lines.append(tem)
-        tem = f"{last.decimal_result} --> {last.decimal_partial}"
-        lines.append(tem)
+            padding = len(tem) + 4
+
+        for idx, state in enumerate(int_parts):
+            lines.append(f"{' ' * space}╰{'─' * padding}")
+
+            if idx + 1 == len(int_parts):
+                tem2 = f"{' ' * (space + 2)}{state.decimal_result} ─── {state.decimal_partial}"
+            else:
+                tem2 = f"{state.to_base} │ {state.decimal_result} ─── {state.decimal_partial}"
+
+            lines.append(tem2)
+
         answer_int = "\n".join(lines)
 
         lines = []
+        space = 4
+
+        padding = 5
+        horizontal = 0
         if len(frac_parts):
-            tem = f"{right}"
+            space = len(right) + 2
+            tem = f"{'#':<{padding - 1}}│{right:>{space}}"
+            horizontal = len(tem) + 4
             lines.append(tem)
         for state in frac_parts:
-            tem = f"{state.to_base}\n----------\n{state.decimal_partial} | {state.decimal_result:.5}"
-            lines.append(tem)
+            tem1 = f"{'│':>{padding}}{'x ' + str(state.to_base):>{space}}"
+            tem2 = "─" * horizontal
+            decimal_result = str(round(state.decimal_result, 8)).strip("0")
+            if decimal_result == ".":
+                decimal_result = "0"
+            tem3 = f"{state.decimal_partial:<{padding - 1}}│{decimal_result:>{space}}"
+            lines.extend([tem1, tem2, tem3])
 
         answer_frac = "\n".join(lines)
         return answer_int, answer_frac

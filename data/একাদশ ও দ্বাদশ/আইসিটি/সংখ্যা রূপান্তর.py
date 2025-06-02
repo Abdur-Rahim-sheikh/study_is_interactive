@@ -13,21 +13,24 @@ class NumberConversion(BasePage):
 
     def form(self) -> tuple:
         with st.form("number_conversion"):
-            num = st.text_input("যেই নাম্বারটিকে কনভার্ট করতে চান")
-            base_from = st.selectbox(
-                label="",
+            col1, col2, col3 = st.columns(
+                [3, 1, 1], vertical_alignment="bottom", gap="large"
+            )
+            num = col1.text_input("যেই নাম্বারটিকে কনভার্ট করতে চান")
+
+            base_from = col2.selectbox(
+                label="হতে",
                 options=self.available_bases,
                 format_func=lambda x: self.available_bases[x],
-                label_visibility="collapsed",
                 key="base1",
             )
-            base_to = st.selectbox(
-                label="",
+            base_to = col3.selectbox(
+                label="হবে",
                 options=self.available_bases,
                 format_func=lambda x: self.available_bases[x],
-                label_visibility="collapsed",
                 key="base2",
             )
+
             submitted = st.form_submit_button("কনভার্ট করুন")
             if submitted:
                 base = self.nc.get_base(base_from)
@@ -42,9 +45,23 @@ class NumberConversion(BasePage):
             return
         num, base_from, base_to = response
         answer, description = self.nc.convert(num, base_from, base_to)
-        self.animate.code(description["to_decimal"], language=None)
-        self.animate.code(description["from_decimal"]["integer_part"], language=None)
-        self.animate.code(description["from_decimal"]["fraction_part"], language=None)
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            self.animate.write(description["to_decimal"])
+        with col2:
+            self.animate.code(
+                description["from_decimal"]["integer_part"],
+                language=None,
+                line_numbers=True,
+                wrap=True,
+            )
+        with col3:
+            self.animate.code(
+                description["from_decimal"]["fraction_part"],
+                language="text",
+                line_numbers=True,
+                wrap=True,
+            )
         st.write(answer)
 
 

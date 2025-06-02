@@ -40,13 +40,20 @@ class Animate:
 
         writer(text)
 
-    def code(self, text: str, language, interval: float = 0.05):
+    def code(
+        self,
+        text: str,
+        language,
+        line_numbers: bool = False,
+        wrap: bool = False,
+        interval: float = 0.05,
+    ):
         div = st.empty()
 
         s = ""
         for char in text:
             s += char
-            div.code(s, language=language)
+            div.code(s, language=language, line_numbers=line_numbers, wrap_lines=wrap)
             time.sleep(interval)
         return div
 
@@ -54,6 +61,7 @@ class Animate:
         """
         Write text to the streamlit app with a typing effect.
         """
+        text = text.replace("\n", "  \n")
         div = st.empty()
 
         self.typwritter(text, div.write, interval)
