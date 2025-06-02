@@ -12,9 +12,9 @@ class NumberConversion(BasePage):
         self.available_bases = self.nc.available_bases
 
     def form(self) -> tuple:
-        with st.form("number_conversion"):
-            col1, col2, col3 = st.columns(
-                [3, 1, 1], vertical_alignment="bottom", gap="large"
+        with st.form("number_conversion", border=False):
+            col1, col2, col3, col4, col5 = st.columns(
+                [2, 1, 1, 2, 4], vertical_alignment="bottom", gap="large"
             )
             num = col1.text_input("যেই নাম্বারটিকে রূপান্তর করতে চান")
 
@@ -31,11 +31,11 @@ class NumberConversion(BasePage):
                 key="base2",
             )
 
-            submitted = st.form_submit_button("কনভার্ট করুন")
+            submitted = col4.form_submit_button("রূপান্তর করুন")
             if submitted:
                 base = self.nc.get_base(base_from)
                 if not self.nc.valid(num, base):
-                    st.error(
+                    col5.error(
                         f"{num} সংখ্যাটি {self.nc.available_bases[base_from]} বেস ফরম্যাটে নেই"
                     )
                 else:
