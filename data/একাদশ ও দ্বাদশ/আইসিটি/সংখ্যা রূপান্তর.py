@@ -6,7 +6,7 @@ from domain.services import Animate, NumberConverter
 
 class NumberConversion(BasePage):
     def __init__(self):
-        super().__init__(__file__, page_icon=":material/sync_alt:")
+        super().__init__(__file__, page_icon=":material/dictionary:")
         self.nc = NumberConverter()
         self.animate = Animate()
         self.available_bases = self.nc.available_bases
