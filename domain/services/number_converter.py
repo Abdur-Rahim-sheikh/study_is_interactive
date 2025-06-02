@@ -211,12 +211,12 @@ class NumberConverter:
         if len(left) % group:
             rem = group - len(left) % group
             left = "0" * rem + left
-            left = " ".join(left[i : i + group] for i in range(0, len(left), group))
+        left = " ".join(left[i : i + group] for i in range(0, len(left), group))
 
         if len(right) % group:
             rem = group - len(right) % group
             right = right + "0" * rem
-            right = " ".join(right[i : i + group] for i in range(0, len(right), group))
+        right = " ".join(right[i : i + group] for i in range(0, len(right), group))
 
         ans = left
         if right:

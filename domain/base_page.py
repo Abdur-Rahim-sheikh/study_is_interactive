@@ -25,15 +25,15 @@ class BasePage(ABC):
         self,
         message: str,
         book_link: str = None,
-        tutorrial_link: str = None,
+        tutorial_link: str = None,
         expanded=False,
     ):
         with st.expander(f"{self.topic}: কিভাবে কাজ করে?", expanded=expanded):
             st.write(message)
             if book_link:
                 st.markdown(f"[{self.chapter} বইয়ের লিংক]({book_link})")
-            if tutorrial_link:
-                st.video(tutorrial_link)
+            if tutorial_link:
+                st.video(tutorial_link)
 
     def setup(self):
         st.set_page_config(
