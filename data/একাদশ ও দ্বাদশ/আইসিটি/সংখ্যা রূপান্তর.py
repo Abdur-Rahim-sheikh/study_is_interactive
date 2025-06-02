@@ -9,7 +9,7 @@ class NumberConversion(BasePage):
         super().__init__(__file__, page_icon=":material/sync_alt:")
         self.nc = NumberConverter()
         self.animate = Animate()
-        self.available_bases = self.nc.get_available_bases()
+        self.available_bases = self.nc.available_bases
 
     def form(self) -> tuple:
         with st.form("number_conversion"):
@@ -35,16 +35,13 @@ class NumberConversion(BasePage):
             if submitted:
                 base = self.nc.get_base(base_from)
                 if not self.nc.valid(num, base):
-                    st.error(f"{num} টি {base_from} বেস ফরম্যাটে নেই")
+                    st.error(
+                        f"{num} সংখ্যাটি {self.nc.available_bases[base_from]} বেস ফরম্যাটে নেই"
+                    )
                 else:
                     return num, base_from, base_to
 
-    def build_page(self):
-        response = self.form()
-        if not response:
-            return
-        num, base_from, base_to = response
-        answer, description = self.nc.convert(num, base_from, base_to)
+    def via_decimal(self, description):
         col1, col2, col3 = st.columns(3)
         with col1:
             self.animate.write(description["to_decimal"])
@@ -59,10 +56,46 @@ class NumberConversion(BasePage):
             self.animate.code(
                 description["from_decimal"]["fraction_part"],
                 language="text",
-                line_numbers=True,
                 wrap=True,
             )
-        st.write(answer)
+
+    def via_binary(self, description):
+        col1, col2 = st.columns(2)
+        with col1:
+            self.animate.code(
+                description["to_binary"], language=None, line_numbers=True
+            )
+        with col2:
+            self.animate.code(
+                description["from_binary"], language=None, line_numbers=True
+            )
+
+    def build_page(self):
+        response = self.form()
+        if not response:
+            return
+        num, base_from, base_to = response
+
+        through_bin = "decimal" not in [base_to, base_from]
+        if through_bin:
+            tab1, tab2 = st.tabs(["দশমিক হয়ে", "বাইনারি হয়ে"])
+        else:
+            tab1 = st.tabs(["দশমিক হয়ে"])[0]
+        with tab1:
+            answer, description = self.nc.convert_via_decimal(num, base_from, base_to)
+            self.via_decimal(description=description)
+            st.write(
+                f"অর্থাৎ {self.nc.available_bases[base_to]} এ রুপান্তরকৃত উত্তরটি হল {answer}"
+            )
+        if not through_bin:
+            return
+        with tab2:
+            answer, description = self.nc.convert_via_binary(num, base_from, base_to)
+            self.via_binary(description)
+
+            st.write(
+                f"অর্থাৎ {self.nc.available_bases[base_to]} এ রুপান্তরকৃত উত্তরটি হল {answer}"
+            )
 
 
 nc = NumberConversion()

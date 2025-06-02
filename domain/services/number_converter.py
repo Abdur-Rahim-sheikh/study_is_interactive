@@ -1,4 +1,5 @@
 from ..models import NumberState
+from math import log2
 
 
 class NumberConverter:
@@ -9,7 +10,8 @@ class NumberConverter:
         "hexadecimal": "হেক্সাডেসিমেল",
     }
 
-    def get_available_bases(self) -> dict:
+    @property
+    def available_bases(self) -> dict:
         return self.NUMBER_TYPES
 
     def get_permitted_digits(self, base: int) -> set:
@@ -82,6 +84,7 @@ class NumberConverter:
                 decimal_partial=int_part,
             )
             frac_parts.append(tem)
+            decimal_part = tem.decimal_result
             answer_frac += tem.formated["partial"]
             mx -= 1
         answer = answer_int
@@ -155,9 +158,9 @@ class NumberConverter:
         answer_frac = "\n".join(lines)
         return answer_int, answer_frac
 
-    def convert(
+    def convert_via_decimal(
         self, number: str, convert_from: str, convert_to: str
-    ) -> list[NumberState]:
+    ) -> tuple[str, str]:
         """
         This returns the final `answer` and the `description` text in latex format
         The description is formatted as:
@@ -173,9 +176,10 @@ class NumberConverter:
         base1, base2 = self.get_base(convert_from), self.get_base(convert_to)
 
         if not self.valid(number, base1):
-            raise ValueError(f"{number} টি {convert_from} বেস ফরম্যাটে নেই")
+            raise ValueError(
+                f"{number} টি {self.available_bases[convert_from]} বেস ফরম্যাটে নেই"
+            )
 
-        to_decimal = []
         description = {
             "to_decimal": "",
             "from_decimal": {"integer_part": "", "fraction_part": ""},
@@ -185,7 +189,6 @@ class NumberConverter:
             answer, state = self.convert_to_decimal(number, base1)
             description["to_decimal"] = self.describe_to_decimal(number, state)
             number = str(state.decimal_result)
-            to_decimal.append(state)
 
         if base2 != 10:
             answer, int_parts, frac_parts = self.convert_from_decimal(number, base2)
@@ -198,3 +201,91 @@ class NumberConverter:
             }
 
         return answer, description
+
+    def __adjust_bin(self, bin, group):
+        x = bin.split(".")
+        if len(x) == 1:
+            left, right = x[0], ""
+        else:
+            left, right = x
+        if len(left) % group:
+            rem = group - len(left) % group
+            left = "0" * rem + left
+            left = " ".join(left[i : i + group] for i in range(0, len(left), group))
+
+        if len(right) % group:
+            rem = group - len(right) % group
+            right = right + "0" * rem
+            right = " ".join(right[i : i + group] for i in range(0, len(right), group))
+
+        ans = left
+        if right:
+            ans += " . " + right
+        return ans
+
+    def describe_binary(self, num: str, bin: str, group: int, to_bin=True) -> str:
+        """Group can be in either 3 or 4"""
+        adjusted_num = " ".join(f"{ch:^{group}}" if ch != "." else ch for ch in num)
+        adjusted_bin = self.__adjust_bin(bin, group)
+        ans = ""
+        other = None
+        if group == 4:
+            other = self.available_bases["hexadecimal"]
+        elif group == 3:
+            other = self.available_bases["octal"]
+        if to_bin:
+            start = (
+                f"{num} {other} সংখ্যাটির প্রতিটি অঙ্কের জন্য {group} অংক সমমান বাইনারি লিখি"
+            )
+            end = "তাহলে বাইনারিতে উত্তর পেলামঃ"
+            ans = f"{start}\n{adjusted_num}\n{adjusted_bin}\n{bin}\n{end} {bin}"
+        else:
+            start = f"{bin} বাইনারি সংখ্যাটিকে প্রতি {group} অঙ্কের গ্রুপে বিভক্ত করি"
+            end = f"আমাদের প্রাপ্ত {other} সংখ্যাঃ"
+            ans = f"{start}\n{adjusted_bin}\n{adjusted_num}\n{num}\n{end} {num}"
+        return ans
+
+    def convert_via_binary(
+        self, number: str, convert_from: str, convert_to: str
+    ) -> tuple[str, str]:
+        """
+        This returns the final `answer` and the `description` text in latex format
+        The description is formatted as:
+        {
+            "to_binary":str,
+            "from_binary":str
+        }
+        This method accpets only 'binary','octal','hexadecimal'
+        """
+        number = str(number)
+        base1, base2 = self.get_base(convert_from), self.get_base(convert_to)
+
+        if not self.valid(number, base1):
+            raise ValueError(
+                f"{number} টি {self.available_bases[convert_from]} বেস ফরম্যাটে নেই"
+            )
+        if base1 == 10 or base2 == 10:
+            raise ValueError(
+                "এই শর্টকাটটি দশমিক এর জন্য সুবিধাজনক নয়।",
+                "আপনি `বাইনারি`, `অক্ট্যাল` ও `হেক্সাডেসিম্যাল` এর সময় এই শর্টকাটটির সুন্দর্য উপভোগ করতে পারবেন",
+            )
+
+        description = {"to_binary": "", "from_binary": ""}
+        decimal, _ = self.convert_to_decimal(number, base1)
+        if base1 != 2:
+            bin, _, _ = self.convert_from_decimal(decimal, 2)
+            group = int(log2(base1))
+            description["to_binary"] = self.describe_binary(
+                num=number, bin=bin, group=group, to_bin=True
+            )
+            number = bin
+
+        if base2 != 2:
+            to_base2, _, _ = self.convert_from_decimal(decimal, base2)
+            group = int(log2(base2))
+            description["from_binary"] = self.describe_binary(
+                num=to_base2, bin=number, group=group, to_bin=False
+            )
+            number = to_base2
+
+        return number, description
