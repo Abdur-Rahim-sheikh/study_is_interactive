@@ -85,7 +85,7 @@ class NumberConversion(BasePage):
             answer, description = self.nc.convert_via_decimal(num, base_from, base_to)
             self.via_decimal(description=description)
             st.write(
-                f"অর্থাৎ {self.nc.available_bases[base_to]} এ রুপান্তরকৃত উত্তরটি হল {answer}"
+                f"অর্থাৎ `{self.nc.available_bases[base_to]}` এ রুপান্তরকৃত উত্তরটি হল `{answer}`"
             )
         if not through_bin:
             return
@@ -94,7 +94,7 @@ class NumberConversion(BasePage):
             self.via_binary(description)
 
             st.write(
-                f"অর্থাৎ {self.nc.available_bases[base_to]} এ রুপান্তরকৃত উত্তরটি হল {answer}"
+                f"অর্থাৎ `{self.nc.available_bases[base_to]}` এ রুপান্তরকৃত উত্তরটি হল `{answer}`"
             )
 
 
