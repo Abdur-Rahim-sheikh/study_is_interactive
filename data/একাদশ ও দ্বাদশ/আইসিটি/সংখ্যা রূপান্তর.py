@@ -14,7 +14,7 @@ class NumberConversion(BasePage):
     def form(self) -> tuple:
         with st.form("number_conversion", border=False):
             col1, col2, col3, col4, col5 = st.columns(
-                [2, 1, 1, 2, 4], vertical_alignment="bottom", gap="large"
+                [3, 2, 2, 2, 4], vertical_alignment="bottom", gap="large"
             )
             num = col1.text_input("যেই নাম্বারটিকে রূপান্তর করতে চান")
 
@@ -31,7 +31,7 @@ class NumberConversion(BasePage):
                 key="base2",
             )
 
-            submitted = col4.form_submit_button("রূপান্তর করুন")
+            submitted = col4.form_submit_button("রূপান্তর করুন", type="primary")
             if submitted:
                 base = self.nc.get_base(base_from)
                 if not self.nc.valid(num, base):
