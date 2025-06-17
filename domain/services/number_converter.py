@@ -178,7 +178,7 @@ class NumberConverter:
         lines.append(tem)
         tem = "সবচেয়ে উপরের অঙ্কটি সবচেয়ে গুরুত্বপূর্ণ (MSB) এবং সবচেয়ে নিচের অঙ্কটি সবচেয়ে কম গুরুত্বপূর্ণ (LSB)"
         lines.append(tem)
-        lines.append("একত্র করে পাইঃ" + combined[::-1])
+        lines.append("একত্র করে পাইঃ " + combined)
         answer_frac = "\n".join(lines)
         if not has_int:
             answer_int = ""
