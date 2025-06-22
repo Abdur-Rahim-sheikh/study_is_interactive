@@ -1,5 +1,6 @@
 import time
 
+import regex
 import streamlit as st
 from PIL import Image, ImageDraw
 
@@ -33,7 +34,7 @@ class Animate:
 
     def typwritter(self, text: str, writer, interval: float):
         s = ""
-        for char in text:
+        for char in regex.findall(r"\X", text):
             writer(s + "**" + char + "**")
             s += char
             time.sleep(interval)
@@ -51,7 +52,7 @@ class Animate:
         div = st.empty()
 
         s = ""
-        for char in text:
+        for char in regex.findall(r"\X", text):
             s += char
             div.code(s, language=language, line_numbers=line_numbers, wrap_lines=wrap)
             time.sleep(interval)
