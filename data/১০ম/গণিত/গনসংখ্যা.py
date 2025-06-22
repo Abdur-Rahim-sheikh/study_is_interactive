@@ -49,7 +49,7 @@ class StatisticsFrequencyDistribution(BasePage):
                 label="গনসংখ্যা মাণগুলি লেখি ",
                 help="সংখ্যাগুলিকে কমা দিয়ে আলাদা কর 12,2,3,4,5",
             )
-            dist = strToList(dist)
+            dist = strToList(dist, unit=int)
             if dist and min(dist) < 0:
                 st.error("গনসংখ্যা ঋণাত্মক হতে পারবে না")
                 st.stop()
@@ -140,6 +140,9 @@ class StatisticsFrequencyDistribution(BasePage):
         arr = [0] * sections_uppper
         lastIdx = 0
         secIdx = 0
+        import streamlit as st
+
+        st.write(mn, mx, diff)
         for i in range(mn, mx + 1, diff):
             cnt = 0
             while lastIdx < len(dist) and dist[lastIdx] < i + diff:
